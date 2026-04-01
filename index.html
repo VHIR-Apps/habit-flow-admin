@@ -180,6 +180,7 @@
         .badge { display:inline-block; padding:4px 12px; border-radius:20px; font-size:11px; font-weight:700; }
         .badge-active { background:rgba(0,200,83,0.15); color:var(--success); }
         .badge-expired { background:rgba(239,68,68,0.15); color:var(--error); }
+        .badge-lifetime { background:rgba(255,215,0,0.15); color:var(--gold); }
 
         /* ═══ STATS ═══ */
         .stats-row { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:28px; }
@@ -189,12 +190,32 @@
         .stat-card .stat-label { font-size:12px; color:var(--text-muted); margin-top:4px; font-weight:600; }
 
         /* ═══ NOTIFICATION PREVIEW ═══ */
-        .notif-preview { background:var(--bg); border:1px solid var(--border); border-radius:16px; padding:18px; margin-top:16px; }
+        .notif-preview {
+            background:var(--bg); border:1px solid var(--border);
+            border-radius:16px; padding:18px; margin-top:16px;
+            transition:all 0.3s;
+        }
         .notif-preview h4 { font-size:14px; font-weight:800; margin-bottom:4px; }
         .notif-preview p { font-size:13px; color:var(--text-secondary); }
 
+        /* ═══ NOTIFICATION HISTORY ═══ */
+        .notif-history-item {
+            background:var(--bg); border:1px solid var(--border);
+            border-radius:14px; padding:16px; margin-bottom:10px;
+            display:flex; justify-content:space-between; align-items:center;
+        }
+        .notif-history-item .notif-content { flex:1; }
+        .notif-history-item .notif-title { font-size:14px; font-weight:700; }
+        .notif-history-item .notif-body { font-size:12px; color:var(--text-secondary); margin-top:4px; }
+        .notif-history-item .notif-time { font-size:11px; color:var(--text-muted); white-space:nowrap; margin-left:16px; }
+
         /* ═══ TOAST ═══ */
-        .toast { position:fixed; top:24px; right:24px; padding:16px 24px; border-radius:14px; font-weight:700; font-size:14px; z-index:9999; transform:translateX(400px); transition:transform 0.4s ease; }
+        .toast {
+            position:fixed; top:24px; right:24px; padding:16px 24px;
+            border-radius:14px; font-weight:700; font-size:14px;
+            z-index:9999; transform:translateX(400px); transition:transform 0.4s ease;
+            display:flex; align-items:center; gap:10px;
+        }
         .toast.show { transform:translateX(0); }
         .toast-success { background:var(--success); color:white; }
         .toast-error { background:var(--error); color:white; }
@@ -204,9 +225,15 @@
         .section.active { display:block; }
 
         /* ═══ MODAL ═══ */
-        .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:500; display:none; align-items:center; justify-content:center; }
+        .modal-overlay {
+            position:fixed; inset:0; background:rgba(0,0,0,0.7);
+            z-index:500; display:none; align-items:center; justify-content:center;
+        }
         .modal-overlay.show { display:flex; }
-        .modal { background:var(--card); border:1px solid var(--border); border-radius:24px; padding:32px; width:500px; max-width:90%; }
+        .modal {
+            background:var(--card); border:1px solid var(--border);
+            border-radius:24px; padding:32px; width:500px; max-width:90%;
+        }
         .modal h3 { font-size:20px; font-weight:900; margin-bottom:24px; }
 
         /* ═══ ADMIN EMAIL DISPLAY ═══ */
@@ -218,6 +245,28 @@
         }
         .admin-email i { font-size:14px; }
 
+        /* ═══ STATUS INDICATOR ═══ */
+        .status-dot {
+            width:8px; height:8px; border-radius:50%;
+            display:inline-block; margin-right:6px;
+        }
+        .status-dot.online { background:var(--success); box-shadow:0 0 8px var(--success); }
+        .status-dot.offline { background:var(--error); }
+
+        /* ═══ SAVE SHORTCUT BADGE ═══ */
+        .save-shortcut {
+            position:fixed; bottom:24px; right:24px;
+            background:var(--card); border:1px solid var(--border);
+            border-radius:12px; padding:10px 16px;
+            font-size:11px; color:var(--text-muted);
+            z-index:50; display:flex; align-items:center; gap:6px;
+        }
+        .save-shortcut kbd {
+            background:var(--bg); border:1px solid var(--border);
+            border-radius:4px; padding:2px 6px; font-size:10px;
+            font-family:'Inter',sans-serif; font-weight:700;
+        }
+
         /* ═══ RESPONSIVE ═══ */
         @media (max-width:900px) {
             .sidebar { transform:translateX(-100%); }
@@ -225,8 +274,11 @@
             .main { margin-left:0; padding:16px; }
             .stats-row { grid-template-columns:1fr 1fr; }
             .form-row,.form-row-3 { grid-template-columns:1fr; }
+            #mobileMenuBtn { display:block !important; }
+            .save-shortcut { display:none; }
         }
         @keyframes spin { to { transform:rotate(360deg); } }
+        @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.5; } }
         ::-webkit-scrollbar { width:6px; }
         ::-webkit-scrollbar-track { background:transparent; }
         ::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.1); border-radius:3px; }
@@ -235,6 +287,11 @@
 <body>
 
 <div id="toast" class="toast"></div>
+
+<!-- ═══ SAVE SHORTCUT INDICATOR ═══ -->
+<div class="save-shortcut">
+    <kbd>Ctrl</kbd> + <kbd>S</kbd> to save
+</div>
 
 <!-- ═══════════════════════════════════════ -->
 <!-- 🔐 LOGIN SCREEN -->
@@ -258,9 +315,13 @@
 <div class="sidebar" id="sidebar">
     <div class="sidebar-header">
         <h1>🧠 HabitNode</h1>
-        <p>Admin Control Panel v3.0</p>
+        <p>Admin Control Panel v3.1</p>
     </div>
-    <div class="admin-email" id="adminEmailDisplay" style="margin:12px 12px 0;"><i class="fas fa-user-shield"></i> <span id="adminEmailText">admin</span></div>
+    <div class="admin-email" id="adminEmailDisplay" style="margin:12px 12px 0;">
+        <i class="fas fa-user-shield"></i>
+        <span id="adminEmailText">admin</span>
+        <span class="status-dot online" style="margin-left:auto;"></span>
+    </div>
     <nav class="sidebar-nav">
         <div class="nav-item active" onclick="showSection('dashboard')"><i class="fas fa-home"></i> Dashboard</div>
         <div class="nav-item" onclick="showSection('appConfig')"><i class="fas fa-sliders"></i> App Config</div>
@@ -271,7 +332,7 @@
         <div class="nav-item" onclick="showSection('pushNotif')"><i class="fas fa-bell"></i> Push Notifications</div>
     </nav>
     <div class="sidebar-footer">
-        <span>v3.0 · VHIR</span>
+        <span>v3.1 · VHIR</span>
         <button class="logout-btn" onclick="handleAdminLogout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
     </div>
 </div>
@@ -295,11 +356,24 @@
         <div class="stat-card"><div class="stat-icon">⏰</div><div class="stat-value" id="stat-expired">-</div><div class="stat-label">Expired</div></div>
         <div class="stat-card"><div class="stat-icon">📢</div><div class="stat-value" id="stat-ads">ON</div><div class="stat-label">Ads Status</div></div>
     </div>
+
+    <!-- Recent Notifications -->
+    <div class="card">
+        <div class="card-title"><i class="fas fa-bell"></i> Recent Notifications</div>
+        <div id="recent-notifications">
+            <p style="color:var(--text-muted); font-size:13px;">Loading...</p>
+        </div>
+    </div>
+
     <div class="card">
         <div class="card-title"><i class="fas fa-info-circle"></i> Quick Info</div>
         <p style="color:var(--text-secondary); line-height:1.8;">
-            Welcome to HabitNode Admin Panel v3.0 with <strong>Login Security</strong>. Every single setting in the app can be controlled from here.
+            Welcome to HabitNode Admin Panel v3.1 with <strong>Login Security</strong> & <strong>Push Notifications</strong>.
+            Every single setting in the app can be controlled from here.
             Changes reflect in the app when users next open it. Use "Force Config Refresh" to trigger immediate update.
+            <br><br>
+            <strong>📢 Push Notification System:</strong> Notifications are saved to Firestore. The app polls for new notifications
+            on each launch and shows them locally. No Cloud Functions needed = $0 cost.
         </p>
     </div>
 </div>
@@ -363,7 +437,7 @@
 </div>
 
 <!-- ═══════════════════════════════════════ -->
-<!-- ALL LINKS (Complete) -->
+<!-- ALL LINKS -->
 <!-- ═══════════════════════════════════════ -->
 <div class="section" id="sec-allLinks">
     <div class="page-header">
@@ -371,7 +445,6 @@
         <button class="btn btn-primary" onclick="saveAllConfig()"><i class="fas fa-save"></i> Save All Links</button>
     </div>
 
-    <!-- Social / Community -->
     <div class="card">
         <div class="card-title"><i class="fab fa-telegram"></i> Community / Social Links</div>
         <div class="form-group"><label class="form-label">Telegram URL</label><input type="url" class="form-input" id="link-telegramUrl" placeholder="https://t.me/yourchannel"></div>
@@ -379,7 +452,6 @@
         <div class="form-group"><label class="form-label">Facebook URL</label><input type="url" class="form-input" id="link-facebookUrl" placeholder="https://facebook.com/page"></div>
     </div>
 
-    <!-- App Website & Legal -->
     <div class="card">
         <div class="card-title"><i class="fas fa-globe"></i> Website & Legal</div>
         <div class="form-group"><label class="form-label">Website URL</label><input type="url" class="form-input" id="link-websiteUrl" placeholder="https://yourwebsite.com"></div>
@@ -387,7 +459,6 @@
         <div class="form-group"><label class="form-label">Terms & Conditions URL</label><input type="url" class="form-input" id="link-termsUrl" placeholder="https://...terms"></div>
     </div>
 
-    <!-- Play Store Links -->
     <div class="card">
         <div class="card-title"><i class="fab fa-google-play"></i> Play Store Links</div>
         <div class="form-group"><label class="form-label">Play Store App URL (Open Store)</label><input type="url" class="form-input" id="link-playStoreAppUrl" placeholder="https://play.google.com/store/apps/details?id=com.habit.node"></div>
@@ -395,7 +466,6 @@
         <div class="form-group"><label class="form-label">Developer / More Apps URL</label><input type="url" class="form-input" id="link-playStoreDeveloperUrl" placeholder="https://play.google.com/store/apps/developer?id=YourName"></div>
     </div>
 
-    <!-- Share Message -->
     <div class="card">
         <div class="card-title"><i class="fas fa-share-alt"></i> Share App Message</div>
         <div class="form-group"><label class="form-label">Message shown when user shares the app</label><textarea class="form-input" id="link-shareMessage" rows="4" placeholder="Check out HabitNode! 🚀&#10;Download now:&#10;https://play.google.com/..." style="resize:vertical;"></textarea></div>
@@ -506,18 +576,71 @@
 </div>
 
 <!-- ═══════════════════════════════════════ -->
-<!-- PUSH NOTIFICATIONS -->
+<!-- 🆕 PUSH NOTIFICATIONS (FULLY FIXED) -->
 <!-- ═══════════════════════════════════════ -->
 <div class="section" id="sec-pushNotif">
-    <div class="page-header"><div><h2>Push Notifications</h2><p class="subtitle">Send notifications and force config refresh</p></div></div>
+    <div class="page-header"><div><h2>Push Notifications</h2><p class="subtitle">Send notifications to all app users & force config refresh</p></div></div>
+
+    <!-- How It Works -->
+    <div class="card" style="border-left:3px solid var(--primary);">
+        <div class="card-title"><i class="fas fa-info-circle"></i> How Push Notifications Work</div>
+        <p style="color:var(--text-secondary); line-height:1.8; font-size:13px;">
+            <strong>1.</strong> You compose a notification here and click "Send".<br>
+            <strong>2.</strong> The notification is saved to Firestore (<code>admin/push_notification</code>).<br>
+            <strong>3.</strong> When any user opens the app, it checks for new notifications.<br>
+            <strong>4.</strong> If there's a new notification (newer than last seen), it shows as a local notification.<br>
+            <strong>5.</strong> <strong>Cost:</strong> ~1 Firestore read per user per app open = practically FREE.<br>
+            <strong>6.</strong> <strong>No Cloud Functions or server needed!</strong>
+        </p>
+    </div>
+
+    <!-- Compose -->
     <div class="card">
         <div class="card-title"><i class="fas fa-paper-plane"></i> Compose Notification</div>
-        <div class="form-group"><label class="form-label">Title</label><input type="text" class="form-input" id="notif-title" placeholder="🔔 New Update!"></div>
-        <div class="form-group"><label class="form-label">Body</label><textarea class="form-input" id="notif-body" rows="3" placeholder="Check out the latest features..." style="resize:vertical;"></textarea></div>
-        <div class="notif-preview"><h4 id="notif-preview-title">🔔 Notification Title</h4><p id="notif-preview-body">Notification body text...</p></div>
+        <div class="form-group">
+            <label class="form-label">Title</label>
+            <input type="text" class="form-input" id="notif-title" placeholder="🔔 New Update!" oninput="updateNotifPreview()">
+        </div>
+        <div class="form-group">
+            <label class="form-label">Body</label>
+            <textarea class="form-input" id="notif-body" rows="3" placeholder="Check out the latest features..." style="resize:vertical;" oninput="updateNotifPreview()"></textarea>
+        </div>
+
+        <!-- Live Preview -->
+        <div class="notif-preview" id="notif-preview-card">
+            <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+                <div style="width:36px; height:36px; background:linear-gradient(135deg,var(--primary),var(--gold)); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:16px;">🧠</div>
+                <div>
+                    <div style="font-size:11px; color:var(--text-muted);">HabitNode · just now</div>
+                </div>
+            </div>
+            <h4 id="notif-preview-title">🔔 Notification Title</h4>
+            <p id="notif-preview-body">Notification body text...</p>
+        </div>
+
         <div style="margin-top:20px; display:flex; gap:12px; flex-wrap:wrap;">
             <button class="btn btn-primary" onclick="sendPushNotification()"><i class="fas fa-paper-plane"></i> Send to All Users</button>
             <button class="btn btn-success" onclick="triggerConfigUpdate()"><i class="fas fa-sync"></i> Force Config Refresh</button>
+        </div>
+    </div>
+
+    <!-- Quick Templates -->
+    <div class="card">
+        <div class="card-title"><i class="fas fa-bolt"></i> Quick Templates</div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <button class="btn btn-sm btn-primary" onclick="applyTemplate('🔔 Don\\'t Forget!', 'Complete your habits today. Small steps lead to big results! 💪')">Daily Reminder</button>
+            <button class="btn btn-sm btn-gold" onclick="applyTemplate('🎉 New Feature!', 'We\\'ve added exciting new features. Open the app to explore! 🚀')">New Feature</button>
+            <button class="btn btn-sm btn-success" onclick="applyTemplate('🏆 Weekend Challenge!', 'Can you complete 100% of your habits this weekend? Let\\'s go! 🔥')">Weekend Challenge</button>
+            <button class="btn btn-sm btn-danger" onclick="applyTemplate('⚡ Update Available!', 'A new version is available. Update now for the best experience! ✨')">App Update</button>
+            <button class="btn btn-sm" style="background:var(--warning);color:#333;" onclick="applyTemplate('💎 VIP Sale!', 'Limited time: Get VIP access at a special price. Don\\'t miss out! 👑')">VIP Promo</button>
+        </div>
+    </div>
+
+    <!-- Notification History -->
+    <div class="card">
+        <div class="card-title"><i class="fas fa-history"></i> Notification History</div>
+        <div id="notification-history">
+            <p style="color:var(--text-muted); font-size:13px;">Loading...</p>
         </div>
     </div>
 </div>
@@ -530,19 +653,23 @@
         <h3>👑 Add VIP User</h3>
         <div class="form-group"><label class="form-label">Email</label><input type="email" class="form-input" id="vip-email" placeholder="user@gmail.com"></div>
         <div class="form-group"><label class="form-label">Password</label><input type="text" class="form-input" id="vip-password" placeholder="Strong password (min 6 chars)"></div>
-        <div class="form-group"><label class="form-label">Expiry Date</label><input type="datetime-local" class="form-input" id="vip-expiry"></div>
+        <div class="form-group">
+            <label class="form-label">Expiry Date (leave empty = Lifetime)</label>
+            <input type="datetime-local" class="form-input" id="vip-expiry">
+        </div>
         <div style="display:flex; gap:12px; margin-top:24px;">
             <button class="btn btn-gold" onclick="createVipUser()" style="flex:1;"><i class="fas fa-crown"></i> Create VIP</button>
             <button class="btn btn-danger btn-sm" onclick="closeVipModal()">Cancel</button>
         </div>
     </div>
 </div>
+
 <!-- ═══════════════════════════════════════════════════════════════ -->
 <!-- FIREBASE + ADMIN LOGIN + ALL LOGIC -->
 <!-- ═══════════════════════════════════════════════════════════════ -->
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getFirestore, doc, setDoc, getDoc, getDocs, collection, deleteDoc, updateDoc, Timestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getFirestore, doc, setDoc, getDoc, getDocs, collection, deleteDoc, updateDoc, Timestamp, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
     import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
     const firebaseConfig = {
@@ -570,6 +697,9 @@
     window.deleteDoc = deleteDoc;
     window.updateDoc = updateDoc;
     window.Timestamp = Timestamp;
+    window.fbQuery = query;
+    window.fbOrderBy = orderBy;
+    window.fbLimit = limit;
     window.createUserWithEmailAndPassword = createUserWithEmailAndPassword;
     window.signInWithEmailAndPassword = signInWithEmailAndPassword;
     window.signOut = signOut;
@@ -577,21 +707,19 @@
     // ═══════════════════════════════════════
     // 🔐 ADMIN LOGIN / AUTH STATE
     // ═══════════════════════════════════════
-    
-    // Store admin UID for VIP creation workaround
+
     let adminEmail = '';
     let adminPassword = '';
 
     onAuthStateChanged(auth, (user) => {
         if (user) {
-            // Logged in
             document.getElementById('loginOverlay').classList.add('hidden');
             document.getElementById('adminEmailText').textContent = user.email || 'Admin';
             adminEmail = user.email || '';
             loadAllConfig();
             loadVipUsers();
+            loadNotificationHistory();
         } else {
-            // Not logged in
             document.getElementById('loginOverlay').classList.remove('hidden');
         }
     });
@@ -613,19 +741,16 @@
         btn.style.display = 'none';
         spinner.classList.add('show');
 
-        // Save admin password temporarily for VIP creation re-login
         adminPassword = password;
 
         try {
             await signInWithEmailAndPassword(auth, email, password);
-            // onAuthStateChanged will handle the rest
         } catch(e) {
             let msg = 'Login failed. Check your credentials.';
             if (e.code === 'auth/user-not-found') msg = 'Admin account not found.';
             else if (e.code === 'auth/wrong-password') msg = 'Incorrect password.';
             else if (e.code === 'auth/invalid-credential') msg = 'Invalid credentials.';
             else if (e.code === 'auth/too-many-requests') msg = 'Too many attempts. Try later.';
-
             errorEl.textContent = msg;
             errorEl.classList.add('show');
         } finally {
@@ -645,7 +770,6 @@
         }
     }
 
-    // Allow Enter key to login
     document.getElementById('loginPassword')?.addEventListener('keydown', function(e) {
         if (e.key === 'Enter') handleAdminLogin();
     });
@@ -656,6 +780,7 @@
     // ═══════════════════════════════════════
     // HELPER FUNCTIONS
     // ═══════════════════════════════════════
+
     function setVal(id, val) {
         const el = document.getElementById(id);
         if (el && val !== undefined && val !== null) el.value = val;
@@ -695,6 +820,35 @@
         return arr.join(', ');
     }
 
+    function formatTimestamp(ts) {
+        if (!ts) return 'N/A';
+        try {
+            const d = ts.toDate ? ts.toDate() : new Date(ts);
+            return d.toLocaleDateString('en-US', {
+                year: 'numeric', month: 'short', day: 'numeric',
+                hour: '2-digit', minute: '2-digit'
+            });
+        } catch(e) { return 'N/A'; }
+    }
+
+    function timeAgo(ts) {
+        if (!ts) return '';
+        try {
+            const d = ts.toDate ? ts.toDate() : new Date(ts);
+            const now = new Date();
+            const diffMs = now - d;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMs / 3600000);
+            const diffDays = Math.floor(diffMs / 86400000);
+
+            if (diffMins < 1) return 'just now';
+            if (diffMins < 60) return diffMins + ' min ago';
+            if (diffHours < 24) return diffHours + ' hour' + (diffHours > 1 ? 's' : '') + ' ago';
+            if (diffDays < 30) return diffDays + ' day' + (diffDays > 1 ? 's' : '') + ' ago';
+            return formatTimestamp(ts);
+        } catch(e) { return ''; }
+    }
+
     window.setVal = setVal;
     window.setToggle = setToggle;
     window.getToggle = getToggle;
@@ -705,6 +859,7 @@
     // ═══════════════════════════════════════
     // LOAD ALL CONFIG FROM FIREBASE
     // ═══════════════════════════════════════
+
     window.loadAllConfig = async function() {
         try {
             const docSnap = await getDoc(fbDoc(db, 'admin', 'app_config'));
@@ -806,6 +961,7 @@
     // ═══════════════════════════════════════
     // SAVE ALL CONFIG TO FIREBASE
     // ═══════════════════════════════════════
+
     window.saveAllConfig = async function() {
         try {
             const configData = {
@@ -909,6 +1065,7 @@
     // ═══════════════════════════════════════
     // VIP USERS — LOAD
     // ═══════════════════════════════════════
+
     window.loadVipUsers = async function() {
         try {
             const snapshot = await getDocs(fbCollection(db, 'vip_users'));
@@ -924,6 +1081,7 @@
 
                 let expiryStr = 'Lifetime';
                 let isActive = true;
+                let badgeClass = 'badge-lifetime';
 
                 if (d.expiryDate) {
                     const expiry = d.expiryDate.toDate();
@@ -931,9 +1089,18 @@
                         year:'numeric', month:'short', day:'numeric',
                         hour:'2-digit', minute:'2-digit'
                     });
-                    if (expiry < new Date()) { isActive = false; expired++; }
-                    else { active++; }
-                } else { active++; }
+                    if (expiry < new Date()) {
+                        isActive = false;
+                        expired++;
+                        badgeClass = 'badge-expired';
+                    } else {
+                        active++;
+                        badgeClass = 'badge-active';
+                    }
+                } else {
+                    active++;
+                    badgeClass = 'badge-lifetime';
+                }
 
                 const deviceBound = d.deviceId
                     ? '✅ ' + d.deviceId.substring(0, 14) + '...'
@@ -942,12 +1109,12 @@
                 tbody.innerHTML += `
                     <tr>
                         <td><strong>${email}</strong></td>
-                        <td><span class="badge ${isActive ? 'badge-active' : 'badge-expired'}">${isActive ? 'Active' : 'Expired'}</span></td>
+                        <td><span class="badge ${badgeClass}">${!d.expiryDate ? '♾️ Lifetime' : (isActive ? 'Active' : 'Expired')}</span></td>
                         <td>${expiryStr}</td>
                         <td style="font-size:12px;">${deviceBound}</td>
                         <td style="white-space:nowrap;">
                             <button class="btn btn-sm btn-primary" onclick="resetDevice('${email}')"><i class="fas fa-mobile-alt"></i> Reset</button>
-                            <button class="btn btn-sm btn-danger" onclick="deleteVip('${email}')" style="margin-left:6px;"><i class="fas fa-trash"></i> Delete</button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteVip('${email}')" style="margin-left:6px;"><i class="fas fa-trash"></i></button>
                         </td>
                     </tr>
                 `;
@@ -958,7 +1125,7 @@
             document.getElementById('stat-expired').textContent = expired;
 
             if (total === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--text-muted); padding:40px;">No VIP users yet.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--text-muted); padding:40px;">No VIP users yet. Click "Add VIP User" to create one.</td></tr>';
             }
         } catch(e) {
             console.error('Load VIP error:', e);
@@ -966,8 +1133,9 @@
     }
 
     // ═══════════════════════════════════════
-    // VIP USERS — CREATE (with admin re-login)
+    // VIP USERS — CREATE
     // ═══════════════════════════════════════
+
     window.createVipUser = async function() {
         const email = getVal('vip-email').trim().toLowerCase();
         const password = getVal('vip-password').trim();
@@ -977,10 +1145,8 @@
         if (password.length < 6) { showToast('Password must be at least 6 characters!', 'error'); return; }
 
         try {
-            // Step 1: Create VIP user in Firebase Auth
             await createUserWithEmailAndPassword(auth, email, password);
 
-            // Step 2: Create Firestore VIP record
             const vipData = {
                 email: email,
                 deviceId: '',
@@ -991,10 +1157,8 @@
             }
             await setDoc(fbDoc(db, 'vip_users', email), vipData);
 
-            // Step 3: Sign out (we just created VIP user, not admin)
             await signOut(auth);
 
-            // Step 4: Re-login as admin automatically
             if (adminEmail && adminPassword) {
                 try {
                     await signInWithEmailAndPassword(auth, adminEmail, adminPassword);
@@ -1011,7 +1175,6 @@
             showToast('Error: ' + e.message, 'error');
             console.error(e);
 
-            // Try to re-login admin if creation failed mid-way
             if (adminEmail && adminPassword) {
                 try { await signInWithEmailAndPassword(auth, adminEmail, adminPassword); } catch(_) {}
             }
@@ -1021,6 +1184,7 @@
     // ═══════════════════════════════════════
     // VIP USERS — RESET DEVICE
     // ═══════════════════════════════════════
+
     window.resetDevice = async function(email) {
         if (!confirm('Reset device for ' + email + '?\nThey can login from a new device.')) return;
         try {
@@ -1035,6 +1199,7 @@
     // ═══════════════════════════════════════
     // VIP USERS — DELETE
     // ═══════════════════════════════════════
+
     window.deleteVip = async function(email) {
         if (!confirm('DELETE VIP: ' + email + '?\n\nFirestore record will be removed.\nAlso delete from Firebase Auth > Users manually.')) return;
         try {
@@ -1047,113 +1212,224 @@
     }
 
     // ═══════════════════════════════════════
-    // PUSH NOTIFICATION
+    // 🆕 PUSH NOTIFICATION — SEND (Firestore-based)
     // ═══════════════════════════════════════
+
     window.sendPushNotification = async function() {
         const title = getVal('notif-title').trim();
         const body = getVal('notif-body').trim();
-        if (!title || !body) { showToast('Title and body required!', 'error'); return; }
+
+        if (!title || !body) {
+            showToast('Title and body are required!', 'error');
+            return;
+        }
 
         try {
-            await setDoc(fbDoc(db, 'admin', 'push_notification'), {
-                title, body,
+            const notifData = {
+                title: title,
+                body: body,
                 sentAt: Timestamp.now(),
+                sentBy: adminEmail || 'admin',
+                type: 'broadcast',
                 read: false,
-            });
-            showToast('Notification saved! ✅', 'success');
+            };
+
+            // Save to the main push_notification document (app reads this)
+            await setDoc(fbDoc(db, 'admin', 'push_notification'), notifData);
+
+            // Also save to notification history collection
+            const historyId = 'notif_' + Date.now();
+            await setDoc(fbDoc(db, 'admin_notifications', historyId), notifData);
+
+            // Clear fields
             document.getElementById('notif-title').value = '';
             document.getElementById('notif-body').value = '';
-            document.getElementById('notif-preview-title').textContent = '🔔 Notification Title';
-            document.getElementById('notif-preview-body').textContent = 'Notification body text...';
+            updateNotifPreview();
+
+            showToast('Notification sent to all users! 📢', 'success');
+
+            // Reload history
+            loadNotificationHistory();
+
         } catch(e) {
-            showToast('Error: ' + e.message, 'error');
+            showToast('Error sending notification: ' + e.message, 'error');
+            console.error('Push notification error:', e);
         }
     }
 
     // ═══════════════════════════════════════
-    // FORCE CONFIG REFRESH
+    // 🆕 FORCE CONFIG REFRESH
     // ═══════════════════════════════════════
+
     window.triggerConfigUpdate = async function() {
         try {
-            await updateDoc(fbDoc(db, 'admin', 'app_config'), {
-                updatedAt: Timestamp.now(),
+            // Set a forceRefresh flag with current timestamp
+            await setDoc(fbDoc(db, 'admin', 'app_config'), {
                 forceRefresh: true,
-            });
-            showToast('Config refresh signal sent! ✅', 'success');
+                forceRefreshAt: Timestamp.now(),
+                updatedAt: Timestamp.now(),
+            }, { merge: true });
+
+            showToast('Config refresh triggered! Apps will update on next open. ✅', 'success');
         } catch(e) {
             showToast('Error: ' + e.message, 'error');
+            console.error(e);
         }
     }
 
     // ═══════════════════════════════════════
-    // RESPONSIVE
+    // 🆕 NOTIFICATION HISTORY — LOAD
     // ═══════════════════════════════════════
-    function checkMobile() {
-        const btn = document.getElementById('mobileMenuBtn');
-        if (btn) btn.style.display = window.innerWidth <= 900 ? 'block' : 'none';
-    }
-    window.addEventListener('load', checkMobile);
-    window.addEventListener('resize', checkMobile);
-</script>
 
-<!-- ═══════════════════════════════════════ -->
-<!-- UI LOGIC (non-module) -->
-<!-- ═══════════════════════════════════════ -->
-<script>
-    // ═══ Section Navigation ═══
-    function showSection(name) {
-        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-        document.getElementById('sec-' + name)?.classList.add('active');
-        event.currentTarget.classList.add('active');
-        document.getElementById('sidebar').classList.remove('open');
+    window.loadNotificationHistory = async function() {
+        try {
+            const snapshot = await getDocs(fbCollection(db, 'admin_notifications'));
+            const historyEl = document.getElementById('notification-history');
+            const recentEl = document.getElementById('recent-notifications');
+
+            const notifications = [];
+            snapshot.forEach(docSnap => {
+                notifications.push({ id: docSnap.id, ...docSnap.data() });
+            });
+
+            // Sort by sentAt descending
+            notifications.sort((a, b) => {
+                const aTime = a.sentAt?.toMillis?.() || 0;
+                const bTime = b.sentAt?.toMillis?.() || 0;
+                return bTime - aTime;
+            });
+
+            if (notifications.length === 0) {
+                historyEl.innerHTML = '<p style="color:var(--text-muted); font-size:13px; text-align:center; padding:24px;">No notifications sent yet. Use the form above to send your first one!</p>';
+                recentEl.innerHTML = '<p style="color:var(--text-muted); font-size:13px;">No notifications sent yet.</p>';
+                return;
+            }
+
+            // Render history
+            let historyHtml = '';
+            notifications.forEach((n, i) => {
+                historyHtml += `
+                    <div class="notif-history-item">
+                        <div class="notif-content">
+                            <div class="notif-title">${n.title || 'Untitled'}</div>
+                            <div class="notif-body">${n.body || ''}</div>
+                        </div>
+                        <div class="notif-time">${timeAgo(n.sentAt)}</div>
+                    </div>
+                `;
+            });
+            historyEl.innerHTML = historyHtml;
+
+            // Render recent (max 3) on dashboard
+            let recentHtml = '';
+            notifications.slice(0, 3).forEach(n => {
+                recentHtml += `
+                    <div class="notif-history-item">
+                        <div class="notif-content">
+                            <div class="notif-title">${n.title || 'Untitled'}</div>
+                            <div class="notif-body">${n.body || ''}</div>
+                        </div>
+                        <div class="notif-time">${timeAgo(n.sentAt)}</div>
+                    </div>
+                `;
+            });
+            recentEl.innerHTML = recentHtml;
+
+        } catch(e) {
+            console.error('Load notification history error:', e);
+            document.getElementById('notification-history').innerHTML =
+                '<p style="color:var(--error); font-size:13px;">Error loading history.</p>';
+        }
     }
 
-    // ═══ Toggle Switch ═══
-    function toggleSwitch(el) {
+    // ═══════════════════════════════════════
+    // 🆕 NOTIFICATION PREVIEW (Live Update)
+    // ═══════════════════════════════════════
+
+    window.updateNotifPreview = function() {
+        const title = getVal('notif-title').trim() || '🔔 Notification Title';
+        const body = getVal('notif-body').trim() || 'Notification body text...';
+
+        document.getElementById('notif-preview-title').textContent = title;
+        document.getElementById('notif-preview-body').textContent = body;
+    }
+
+    // ═══════════════════════════════════════
+    // 🆕 NOTIFICATION QUICK TEMPLATES
+    // ═══════════════════════════════════════
+
+    window.applyTemplate = function(title, body) {
+        document.getElementById('notif-title').value = title;
+        document.getElementById('notif-body').value = body;
+        updateNotifPreview();
+        showToast('Template applied!', 'success');
+    }
+
+    // ═══════════════════════════════════════
+    // UI FUNCTIONS
+    // ═══════════════════════════════════════
+
+    window.toggleSwitch = function(el) {
         el.classList.toggle('active');
     }
 
-    // ═══ Toast ═══
-    function showToast(msg, type) {
-        const toast = document.getElementById('toast');
-        toast.textContent = msg;
-        toast.className = 'toast toast-' + type + ' show';
-        setTimeout(() => toast.classList.remove('show'), 3500);
+    window.showSection = function(name) {
+        // Hide all sections
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        // Show target
+        const target = document.getElementById('sec-' + name);
+        if (target) target.classList.add('active');
+
+        // Update nav items
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        event.currentTarget.classList.add('active');
+
+        // Close mobile sidebar
+        document.getElementById('sidebar').classList.remove('open');
     }
 
-    // ═══ VIP Modal ═══
-    function showAddVipModal() {
+    window.showToast = function(message, type) {
+        const toast = document.getElementById('toast');
+        toast.textContent = message;
+        toast.className = 'toast toast-' + (type || 'success') + ' show';
+        setTimeout(() => { toast.classList.remove('show'); }, 3500);
+    }
+
+    window.showAddVipModal = function() {
         document.getElementById('vip-email').value = '';
         document.getElementById('vip-password').value = '';
         document.getElementById('vip-expiry').value = '';
         document.getElementById('addVipModal').classList.add('show');
     }
 
-    function closeVipModal() {
+    window.closeVipModal = function() {
         document.getElementById('addVipModal').classList.remove('show');
     }
 
-    // Close modal on overlay click
+    // ═══════════════════════════════════════
+    // KEYBOARD SHORTCUTS
+    // ═══════════════════════════════════════
+
+    document.addEventListener('keydown', function(e) {
+        // Ctrl+S or Cmd+S = Save
+        if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+            e.preventDefault();
+            saveAllConfig();
+        }
+        // Escape = Close modal
+        if (e.key === 'Escape') {
+            closeVipModal();
+        }
+    });
+
+    // ═══════════════════════════════════════
+    // CLICK OUTSIDE MODAL TO CLOSE
+    // ═══════════════════════════════════════
+
     document.getElementById('addVipModal')?.addEventListener('click', function(e) {
         if (e.target === this) closeVipModal();
     });
 
-    // ═══ Notification Preview ═══
-    document.getElementById('notif-title')?.addEventListener('input', function() {
-        document.getElementById('notif-preview-title').textContent = this.value || '🔔 Notification Title';
-    });
-    document.getElementById('notif-body')?.addEventListener('input', function() {
-        document.getElementById('notif-preview-body').textContent = this.value || 'Notification body text...';
-    });
-
-    // ═══ Ctrl+S Save Shortcut ═══
-    document.addEventListener('keydown', function(e) {
-        if ((e.ctrlKey || e.metaKey) && e.key === 's') {
-            e.preventDefault();
-            if (typeof saveAllConfig === 'function') saveAllConfig();
-        }
-    });
 </script>
 
 </body>
