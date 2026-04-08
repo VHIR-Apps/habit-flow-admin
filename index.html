@@ -1,1436 +1,1414 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HabitNode Admin Panel</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <style>
-        :root {
-            --primary: #6C63FF;
-            --primary-dark: #4338CA;
-            --accent: #FF6B6B;
-            --success: #00C853;
-            --warning: #FFB300;
-            --error: #EF4444;
-            --gold: #FFD700;
-            --bg: #0B1020;
-            --card: #151C2F;
-            --card-hover: #1A2338;
-            --border: rgba(255,255,255,0.08);
-            --text: #FFFFFF;
-            --text-secondary: rgba(255,255,255,0.6);
-            --text-muted: rgba(255,255,255,0.35);
-        }
-        * { margin:0; padding:0; box-sizing:border-box; }
-        body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>HabitNode Admin Panel</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-        /* ═══ LOGIN SCREEN ═══ */
-        .login-overlay {
-            position:fixed; inset:0; z-index:9999;
-            background:var(--bg);
-            display:flex; align-items:center; justify-content:center;
-        }
-        .login-overlay.hidden { display:none; }
-        .login-box {
-            background:var(--card); border:1px solid var(--border);
-            border-radius:28px; padding:48px 40px; width:420px; max-width:90%;
-            text-align:center;
-        }
-        .login-box .login-icon {
-            width:80px; height:80px; margin:0 auto 24px;
-            background:linear-gradient(135deg,var(--primary),var(--gold));
-            border-radius:24px; display:flex; align-items:center; justify-content:center;
-            font-size:36px;
-        }
-        .login-box h2 { font-size:26px; font-weight:900; margin-bottom:8px; }
-        .login-box p { font-size:14px; color:var(--text-muted); margin-bottom:32px; }
-        .login-box .form-input { margin-bottom:16px; text-align:left; }
-        .login-box .login-error {
-            color:var(--error); font-size:13px; font-weight:600;
-            margin-bottom:16px; display:none;
-        }
-        .login-box .login-error.show { display:block; }
-        .login-box .btn { width:100%; justify-content:center; margin-top:8px; }
-        .login-box .login-spinner {
-            width:22px; height:22px;
-            border:3px solid rgba(255,255,255,0.2);
-            border-top:3px solid white;
-            border-radius:50%;
-            animation:spin 0.8s linear infinite;
-            display:none; margin:0 auto;
-        }
-        .login-box .login-spinner.show { display:inline-block; }
+  <style>
+    :root {
+      --primary: #6C63FF;
+      --primary-dark: #4338CA;
+      --accent: #FF6B6B;
+      --success: #00C853;
+      --warning: #FFB300;
+      --error: #EF4444;
+      --gold: #FFD700;
+      --bg: #0B1020;
+      --card: #151C2F;
+      --card-hover: #1A2338;
+      --border: rgba(255,255,255,0.08);
+      --text: #FFFFFF;
+      --text-secondary: rgba(255,255,255,0.6);
+      --text-muted: rgba(255,255,255,0.35);
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
 
-        /* ═══ SIDEBAR ═══ */
-        .sidebar {
-            position:fixed; left:0; top:0; bottom:0; width:280px;
-            background:var(--card); border-right:1px solid var(--border);
-            display:flex; flex-direction:column; z-index:100; transition:transform 0.3s ease;
-        }
-        .sidebar-header { padding:28px 24px; border-bottom:1px solid var(--border); }
-        .sidebar-header h1 {
-            font-size:22px; font-weight:900;
-            background:linear-gradient(135deg,var(--primary),var(--gold));
-            -webkit-background-clip:text; -webkit-text-fill-color:transparent;
-        }
-        .sidebar-header p { font-size:12px; color:var(--text-muted); margin-top:4px; }
-        .sidebar-nav { flex:1; padding:16px 12px; overflow-y:auto; }
-        .nav-item {
-            display:flex; align-items:center; gap:14px; padding:14px 16px;
-            border-radius:14px; cursor:pointer; color:var(--text-secondary);
-            font-weight:600; font-size:14px; transition:all 0.2s; margin-bottom:4px;
-        }
-        .nav-item:hover { background:rgba(108,99,255,0.1); color:var(--text); }
-        .nav-item.active {
-            background:linear-gradient(135deg,rgba(108,99,255,0.2),rgba(108,99,255,0.1));
-            color:var(--primary); border:1px solid rgba(108,99,255,0.2);
-        }
-        .nav-item i { width:22px; text-align:center; font-size:16px; }
-        .sidebar-footer {
-            padding:20px 24px; border-top:1px solid var(--border);
-            font-size:11px; color:var(--text-muted);
-            display:flex; align-items:center; justify-content:space-between;
-        }
-        .sidebar-footer .logout-btn {
-            background:none; border:1px solid var(--error); color:var(--error);
-            padding:6px 14px; border-radius:10px; cursor:pointer;
-            font-size:11px; font-weight:700; transition:all 0.2s;
-        }
-        .sidebar-footer .logout-btn:hover { background:var(--error); color:white; }
+    /* Toast */
+    .toast {
+      position:fixed; top:24px; right:24px; padding:16px 24px;
+      border-radius:14px; font-weight:700; font-size:14px;
+      z-index:9999; transform:translateX(400px); transition:transform 0.4s ease;
+      display:flex; align-items:center; gap:10px;
+      max-width: calc(100vw - 48px);
+    }
+    .toast.show { transform:translateX(0); }
+    .toast-success { background:var(--success); color:white; }
+    .toast-error { background:var(--error); color:white; }
+    .toast-warning { background:var(--warning); color:#111827; }
 
-        /* ═══ MAIN ═══ */
-        .main { margin-left:280px; padding:32px; min-height:100vh; }
-        .page-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:32px; flex-wrap:wrap; gap:16px; }
-        .page-header h2 { font-size:28px; font-weight:900; }
-        .page-header .subtitle { font-size:14px; color:var(--text-secondary); margin-top:4px; }
+    /* Save Shortcut */
+    .save-shortcut {
+      position:fixed; bottom:24px; right:24px;
+      background:var(--card); border:1px solid var(--border);
+      border-radius:12px; padding:10px 16px;
+      font-size:11px; color:var(--text-muted);
+      z-index:50; display:flex; align-items:center; gap:6px;
+    }
+    .save-shortcut kbd {
+      background:var(--bg); border:1px solid var(--border);
+      border-radius:4px; padding:2px 6px; font-size:10px;
+      font-family:'Inter',sans-serif; font-weight:700;
+    }
 
-        /* ═══ CARD ═══ */
-        .card {
-            background:var(--card); border:1px solid var(--border);
-            border-radius:20px; padding:24px; margin-bottom:20px; transition:all 0.2s;
-        }
-        .card:hover { border-color:rgba(108,99,255,0.2); }
-        .card-title {
-            font-size:16px; font-weight:800; margin-bottom:20px;
-            display:flex; align-items:center; gap:10px;
-        }
-        .card-title i { color:var(--primary); }
+    /* Login */
+    .login-overlay {
+      position:fixed; inset:0; z-index:9999;
+      background:var(--bg);
+      display:flex; align-items:center; justify-content:center;
+    }
+    .login-overlay.hidden { display:none; }
+    .login-box {
+      background:var(--card); border:1px solid var(--border);
+      border-radius:28px; padding:48px 40px; width:420px; max-width:90%;
+      text-align:center;
+    }
+    .login-box .login-icon {
+      width:80px; height:80px; margin:0 auto 24px;
+      background:linear-gradient(135deg,var(--primary),var(--gold));
+      border-radius:24px; display:flex; align-items:center; justify-content:center;
+      font-size:36px;
+    }
+    .login-box h2 { font-size:26px; font-weight:900; margin-bottom:8px; }
+    .login-box p { font-size:14px; color:var(--text-muted); margin-bottom:32px; }
+    .login-box .form-input { margin-bottom:16px; text-align:left; }
+    .login-box .login-error {
+      color:var(--error); font-size:13px; font-weight:600;
+      margin-bottom:16px; display:none; text-align:left; line-height:1.4;
+    }
+    .login-box .login-error.show { display:block; }
+    .login-box .btn { width:100%; justify-content:center; margin-top:8px; }
+    .login-box .login-spinner {
+      width:22px; height:22px;
+      border:3px solid rgba(255,255,255,0.2);
+      border-top:3px solid white;
+      border-radius:50%;
+      animation:spin 0.8s linear infinite;
+      display:none; margin:12px auto 0;
+    }
+    .login-box .login-spinner.show { display:inline-block; }
 
-        /* ═══ FORM ═══ */
-        .form-group { margin-bottom:18px; }
-        .form-label {
-            display:block; font-size:13px; font-weight:700;
-            color:var(--text-secondary); margin-bottom:8px;
-            text-transform:uppercase; letter-spacing:0.5px;
-        }
-        .form-input {
-            width:100%; padding:14px 16px; background:var(--bg);
-            border:1px solid var(--border); border-radius:12px;
-            color:var(--text); font-size:14px; font-family:'Inter',sans-serif;
-            transition:all 0.2s; outline:none;
-        }
-        .form-input:focus { border-color:var(--primary); box-shadow:0 0 0 3px rgba(108,99,255,0.15); }
-        .form-input::placeholder { color:var(--text-muted); }
-        .form-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
-        .form-row-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; }
+    /* Sidebar */
+    .sidebar {
+      position:fixed; left:0; top:0; bottom:0; width:280px;
+      background:var(--card); border-right:1px solid var(--border);
+      display:flex; flex-direction:column; z-index:100; transition:transform 0.3s ease;
+    }
+    .sidebar-header { padding:28px 24px; border-bottom:1px solid var(--border); }
+    .sidebar-header h1 {
+      font-size:22px; font-weight:900;
+      background:linear-gradient(135deg,var(--primary),var(--gold));
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+    }
+    .sidebar-header p { font-size:12px; color:var(--text-muted); margin-top:4px; }
 
-        /* ═══ TOGGLE ═══ */
-        .toggle-group {
-            display:flex; align-items:center; justify-content:space-between;
-            padding:14px 0; border-bottom:1px solid var(--border);
-        }
-        .toggle-group:last-child { border-bottom:none; }
-        .toggle-label { font-size:14px; font-weight:600; }
-        .toggle-desc { font-size:12px; color:var(--text-muted); margin-top:2px; }
-        .toggle {
-            position:relative; width:48px; height:26px;
-            background:rgba(255,255,255,0.1); border-radius:13px;
-            cursor:pointer; transition:all 0.3s; flex-shrink:0;
-        }
-        .toggle.active { background:var(--primary); }
-        .toggle::after {
-            content:''; position:absolute; top:3px; left:3px;
-            width:20px; height:20px; background:white;
-            border-radius:50%; transition:all 0.3s;
-        }
-        .toggle.active::after { left:25px; }
+    .admin-email {
+      display:flex; align-items:center; gap:8px;
+      padding:10px 16px; background:rgba(108,99,255,0.1);
+      border-radius:12px; margin:12px 12px 0;
+      font-size:12px; font-weight:600; color:var(--primary);
+      border: 1px solid rgba(108,99,255,0.12);
+    }
+    .admin-email i { font-size:14px; }
+    .status-dot {
+      width:8px; height:8px; border-radius:50%;
+      display:inline-block; margin-right:6px;
+    }
+    .status-dot.online { background:var(--success); box-shadow:0 0 8px var(--success); }
+    .status-dot.offline { background:var(--error); }
 
-        /* ═══ BUTTONS ═══ */
-        .btn {
-            padding:14px 28px; border:none; border-radius:14px;
-            font-family:'Inter',sans-serif; font-weight:800; font-size:14px;
-            cursor:pointer; transition:all 0.2s;
-            display:inline-flex; align-items:center; gap:8px;
-        }
-        .btn-primary { background:linear-gradient(135deg,var(--primary),var(--primary-dark)); color:white; }
-        .btn-primary:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(108,99,255,0.3); }
-        .btn-success { background:var(--success); color:white; }
-        .btn-danger { background:var(--error); color:white; }
-        .btn-gold { background:linear-gradient(135deg,var(--gold),#FF8C00); color:#333; }
-        .btn-sm { padding:8px 16px; font-size:12px; border-radius:10px; }
+    .sidebar-nav { flex:1; padding:16px 12px; overflow-y:auto; }
+    .nav-item {
+      display:flex; align-items:center; gap:14px; padding:14px 16px;
+      border-radius:14px; cursor:pointer; color:var(--text-secondary);
+      font-weight:600; font-size:14px; transition:all 0.2s; margin-bottom:4px;
+      user-select:none;
+    }
+    .nav-item:hover { background:rgba(108,99,255,0.1); color:var(--text); }
+    .nav-item.active {
+      background:linear-gradient(135deg,rgba(108,99,255,0.2),rgba(108,99,255,0.1));
+      color:var(--primary); border:1px solid rgba(108,99,255,0.2);
+    }
+    .nav-item i { width:22px; text-align:center; font-size:16px; }
 
-        /* ═══ TABLE ═══ */
-        .table-container { overflow-x:auto; }
-        table { width:100%; border-collapse:collapse; }
-        th { text-align:left; padding:14px 16px; font-size:12px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; border-bottom:1px solid var(--border); }
-        td { padding:14px 16px; font-size:14px; border-bottom:1px solid var(--border); }
-        tr:hover td { background:rgba(108,99,255,0.03); }
-        .badge { display:inline-block; padding:4px 12px; border-radius:20px; font-size:11px; font-weight:700; }
-        .badge-active { background:rgba(0,200,83,0.15); color:var(--success); }
-        .badge-expired { background:rgba(239,68,68,0.15); color:var(--error); }
-        .badge-lifetime { background:rgba(255,215,0,0.15); color:var(--gold); }
+    .sidebar-footer {
+      padding:20px 24px; border-top:1px solid var(--border);
+      font-size:11px; color:var(--text-muted);
+      display:flex; align-items:center; justify-content:space-between;
+    }
+    .sidebar-footer .logout-btn {
+      background:none; border:1px solid var(--error); color:var(--error);
+      padding:6px 14px; border-radius:10px; cursor:pointer;
+      font-size:11px; font-weight:700; transition:all 0.2s;
+    }
+    .sidebar-footer .logout-btn:hover { background:var(--error); color:white; }
 
-        /* ═══ STATS ═══ */
-        .stats-row { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:28px; }
-        .stat-card { background:var(--card); border:1px solid var(--border); border-radius:18px; padding:22px; text-align:center; }
-        .stat-card .stat-icon { font-size:28px; margin-bottom:12px; }
-        .stat-card .stat-value { font-size:28px; font-weight:900; }
-        .stat-card .stat-label { font-size:12px; color:var(--text-muted); margin-top:4px; font-weight:600; }
+    /* Main */
+    .main { margin-left:280px; padding:32px; min-height:100vh; }
+    .page-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:32px; flex-wrap:wrap; gap:16px; }
+    .page-header h2 { font-size:28px; font-weight:900; }
+    .page-header .subtitle { font-size:14px; color:var(--text-secondary); margin-top:4px; }
 
-        /* ═══ NOTIFICATION PREVIEW ═══ */
-        .notif-preview {
-            background:var(--bg); border:1px solid var(--border);
-            border-radius:16px; padding:18px; margin-top:16px;
-            transition:all 0.3s;
-        }
-        .notif-preview h4 { font-size:14px; font-weight:800; margin-bottom:4px; }
-        .notif-preview p { font-size:13px; color:var(--text-secondary); }
+    /* Card */
+    .card {
+      background:var(--card); border:1px solid var(--border);
+      border-radius:20px; padding:24px; margin-bottom:20px; transition:all 0.2s;
+    }
+    .card:hover { border-color:rgba(108,99,255,0.2); }
+    .card-title {
+      font-size:16px; font-weight:800; margin-bottom:20px;
+      display:flex; align-items:center; gap:10px;
+    }
+    .card-title i { color:var(--primary); }
 
-        /* ═══ NOTIFICATION HISTORY ═══ */
-        .notif-history-item {
-            background:var(--bg); border:1px solid var(--border);
-            border-radius:14px; padding:16px; margin-bottom:10px;
-            display:flex; justify-content:space-between; align-items:center;
-        }
-        .notif-history-item .notif-content { flex:1; }
-        .notif-history-item .notif-title { font-size:14px; font-weight:700; }
-        .notif-history-item .notif-body { font-size:12px; color:var(--text-secondary); margin-top:4px; }
-        .notif-history-item .notif-time { font-size:11px; color:var(--text-muted); white-space:nowrap; margin-left:16px; }
+    /* Form */
+    .form-group { margin-bottom:18px; }
+    .form-label {
+      display:block; font-size:13px; font-weight:700;
+      color:var(--text-secondary); margin-bottom:8px;
+      text-transform:uppercase; letter-spacing:0.5px;
+    }
+    .form-input {
+      width:100%; padding:14px 16px; background:var(--bg);
+      border:1px solid var(--border); border-radius:12px;
+      color:var(--text); font-size:14px; font-family:'Inter',sans-serif;
+      transition:all 0.2s; outline:none;
+    }
+    .form-input:focus { border-color:var(--primary); box-shadow:0 0 0 3px rgba(108,99,255,0.15); }
+    .form-input::placeholder { color:var(--text-muted); }
+    .form-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+    .form-row-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; }
 
-        /* ═══ TOAST ═══ */
-        .toast {
-            position:fixed; top:24px; right:24px; padding:16px 24px;
-            border-radius:14px; font-weight:700; font-size:14px;
-            z-index:9999; transform:translateX(400px); transition:transform 0.4s ease;
-            display:flex; align-items:center; gap:10px;
-        }
-        .toast.show { transform:translateX(0); }
-        .toast-success { background:var(--success); color:white; }
-        .toast-error { background:var(--error); color:white; }
+    /* Toggle */
+    .toggle-group {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:14px 0; border-bottom:1px solid var(--border);
+      gap: 16px;
+    }
+    .toggle-group:last-child { border-bottom:none; }
+    .toggle-label { font-size:14px; font-weight:600; }
+    .toggle-desc { font-size:12px; color:var(--text-muted); margin-top:2px; }
+    .toggle {
+      position:relative; width:48px; height:26px;
+      background:rgba(255,255,255,0.1); border-radius:13px;
+      cursor:pointer; transition:all 0.3s; flex-shrink:0;
+    }
+    .toggle.active { background:var(--primary); }
+    .toggle::after {
+      content:''; position:absolute; top:3px; left:3px;
+      width:20px; height:20px; background:white;
+      border-radius:50%; transition:all 0.3s;
+    }
+    .toggle.active::after { left:25px; }
 
-        /* ═══ SECTION ═══ */
-        .section { display:none; }
-        .section.active { display:block; }
+    /* Buttons */
+    .btn {
+      padding:14px 28px; border:none; border-radius:14px;
+      font-family:'Inter',sans-serif; font-weight:800; font-size:14px;
+      cursor:pointer; transition:all 0.2s;
+      display:inline-flex; align-items:center; gap:8px;
+      user-select:none;
+    }
+    .btn-primary { background:linear-gradient(135deg,var(--primary),var(--primary-dark)); color:white; }
+    .btn-primary:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(108,99,255,0.3); }
+    .btn-success { background:var(--success); color:white; }
+    .btn-danger { background:var(--error); color:white; }
+    .btn-gold { background:linear-gradient(135deg,var(--gold),#FF8C00); color:#333; }
+    .btn-sm { padding:8px 16px; font-size:12px; border-radius:10px; }
 
-        /* ═══ MODAL ═══ */
-        .modal-overlay {
-            position:fixed; inset:0; background:rgba(0,0,0,0.7);
-            z-index:500; display:none; align-items:center; justify-content:center;
-        }
-        .modal-overlay.show { display:flex; }
-        .modal {
-            background:var(--card); border:1px solid var(--border);
-            border-radius:24px; padding:32px; width:500px; max-width:90%;
-        }
-        .modal h3 { font-size:20px; font-weight:900; margin-bottom:24px; }
+    /* Table */
+    .table-container { overflow-x:auto; }
+    table { width:100%; border-collapse:collapse; }
+    th { text-align:left; padding:14px 16px; font-size:12px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; border-bottom:1px solid var(--border); }
+    td { padding:14px 16px; font-size:14px; border-bottom:1px solid var(--border); }
+    tr:hover td { background:rgba(108,99,255,0.03); }
+    .badge { display:inline-block; padding:4px 12px; border-radius:20px; font-size:11px; font-weight:700; }
+    .badge-active { background:rgba(0,200,83,0.15); color:var(--success); }
+    .badge-expired { background:rgba(239,68,68,0.15); color:var(--error); }
+    .badge-lifetime { background:rgba(255,215,0,0.15); color:var(--gold); }
 
-        /* ═══ ADMIN EMAIL DISPLAY ═══ */
-        .admin-email {
-            display:flex; align-items:center; gap:8px;
-            padding:10px 16px; background:rgba(108,99,255,0.1);
-            border-radius:12px; margin-bottom:12px;
-            font-size:12px; font-weight:600; color:var(--primary);
-        }
-        .admin-email i { font-size:14px; }
+    /* Stats */
+    .stats-row { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:28px; }
+    .stat-card { background:var(--card); border:1px solid var(--border); border-radius:18px; padding:22px; text-align:center; }
+    .stat-card .stat-icon { font-size:28px; margin-bottom:12px; }
+    .stat-card .stat-value { font-size:28px; font-weight:900; }
+    .stat-card .stat-label { font-size:12px; color:var(--text-muted); margin-top:4px; font-weight:600; }
 
-        /* ═══ STATUS INDICATOR ═══ */
-        .status-dot {
-            width:8px; height:8px; border-radius:50%;
-            display:inline-block; margin-right:6px;
-        }
-        .status-dot.online { background:var(--success); box-shadow:0 0 8px var(--success); }
-        .status-dot.offline { background:var(--error); }
+    /* Notification preview */
+    .notif-preview {
+      background:var(--bg); border:1px solid var(--border);
+      border-radius:16px; padding:18px; margin-top:16px;
+      transition:all 0.3s;
+    }
+    .notif-preview h4 { font-size:14px; font-weight:800; margin-bottom:4px; }
+    .notif-preview p { font-size:13px; color:var(--text-secondary); }
 
-        /* ═══ SAVE SHORTCUT BADGE ═══ */
-        .save-shortcut {
-            position:fixed; bottom:24px; right:24px;
-            background:var(--card); border:1px solid var(--border);
-            border-radius:12px; padding:10px 16px;
-            font-size:11px; color:var(--text-muted);
-            z-index:50; display:flex; align-items:center; gap:6px;
-        }
-        .save-shortcut kbd {
-            background:var(--bg); border:1px solid var(--border);
-            border-radius:4px; padding:2px 6px; font-size:10px;
-            font-family:'Inter',sans-serif; font-weight:700;
-        }
+    /* Notification history */
+    .notif-history-item {
+      background:var(--bg); border:1px solid var(--border);
+      border-radius:14px; padding:16px; margin-bottom:10px;
+      display:flex; justify-content:space-between; align-items:center;
+      gap: 16px;
+    }
+    .notif-history-item .notif-content { flex:1; }
+    .notif-history-item .notif-title { font-size:14px; font-weight:700; }
+    .notif-history-item .notif-body { font-size:12px; color:var(--text-secondary); margin-top:4px; }
+    .notif-history-item .notif-time { font-size:11px; color:var(--text-muted); white-space:nowrap; }
 
-        /* ═══ RESPONSIVE ═══ */
-        @media (max-width:900px) {
-            .sidebar { transform:translateX(-100%); }
-            .sidebar.open { transform:translateX(0); }
-            .main { margin-left:0; padding:16px; }
-            .stats-row { grid-template-columns:1fr 1fr; }
-            .form-row,.form-row-3 { grid-template-columns:1fr; }
-            #mobileMenuBtn { display:block !important; }
-            .save-shortcut { display:none; }
-        }
-        @keyframes spin { to { transform:rotate(360deg); } }
-        @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.5; } }
-        ::-webkit-scrollbar { width:6px; }
-        ::-webkit-scrollbar-track { background:transparent; }
-        ::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.1); border-radius:3px; }
-    </style>
+    /* Sections */
+    .section { display:none; }
+    .section.active { display:block; }
+
+    /* Modal */
+    .modal-overlay {
+      position:fixed; inset:0; background:rgba(0,0,0,0.7);
+      z-index:500; display:none; align-items:center; justify-content:center;
+    }
+    .modal-overlay.show { display:flex; }
+    .modal {
+      background:var(--card); border:1px solid var(--border);
+      border-radius:24px; padding:32px; width:500px; max-width:90%;
+    }
+    .modal h3 { font-size:20px; font-weight:900; margin-bottom:24px; }
+
+    /* Mobile */
+    @media (max-width:900px) {
+      .sidebar { transform:translateX(-100%); }
+      .sidebar.open { transform:translateX(0); }
+      .main { margin-left:0; padding:16px; }
+      .stats-row { grid-template-columns:1fr 1fr; }
+      .form-row,.form-row-3 { grid-template-columns:1fr; }
+      #mobileMenuBtn { display:block !important; }
+      .save-shortcut { display:none; }
+    }
+
+    @keyframes spin { to { transform:rotate(360deg); } }
+    ::-webkit-scrollbar { width:6px; }
+    ::-webkit-scrollbar-track { background:transparent; }
+    ::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.1); border-radius:3px; }
+  </style>
 </head>
 <body>
 
 <div id="toast" class="toast"></div>
 
-<!-- ═══ SAVE SHORTCUT INDICATOR ═══ -->
 <div class="save-shortcut">
-    <kbd>Ctrl</kbd> + <kbd>S</kbd> to save
+  <kbd>Ctrl</kbd> + <kbd>S</kbd> to save
 </div>
 
-<!-- ═══════════════════════════════════════ -->
-<!-- 🔐 LOGIN SCREEN -->
-<!-- ═══════════════════════════════════════ -->
+<!-- LOGIN -->
 <div class="login-overlay" id="loginOverlay">
-    <div class="login-box">
-        <div class="login-icon">🔐</div>
-        <h2>Admin Login</h2>
-        <p>Sign in with your Firebase admin credentials</p>
-        <div id="loginError" class="login-error">Invalid email or password</div>
-        <input type="email" class="form-input" id="loginEmail" placeholder="Admin Email" autocomplete="email">
-        <input type="password" class="form-input" id="loginPassword" placeholder="Password" autocomplete="current-password">
-        <button class="btn btn-primary" id="loginBtn" onclick="handleAdminLogin()">
-            <i class="fas fa-sign-in-alt"></i> Sign In
-        </button>
-        <div class="login-spinner" id="loginSpinner"></div>
-    </div>
+  <div class="login-box">
+    <div class="login-icon">🔐</div>
+    <h2>Admin Login</h2>
+    <p>Sign in with your Firebase admin credentials</p>
+    <div id="loginError" class="login-error">Invalid email or password</div>
+    <input type="email" class="form-input" id="loginEmail" placeholder="Admin Email" autocomplete="email">
+    <input type="password" class="form-input" id="loginPassword" placeholder="Password" autocomplete="current-password">
+    <button class="btn btn-primary" id="loginBtn" onclick="handleAdminLogin()">
+      <i class="fas fa-sign-in-alt"></i> Sign In
+    </button>
+    <div class="login-spinner" id="loginSpinner"></div>
+  </div>
 </div>
 
-<!-- ═══ SIDEBAR ═══ -->
+<!-- SIDEBAR -->
 <div class="sidebar" id="sidebar">
-    <div class="sidebar-header">
-        <h1>🧠 HabitNode</h1>
-        <p>Admin Control Panel v3.1</p>
-    </div>
-    <div class="admin-email" id="adminEmailDisplay" style="margin:12px 12px 0;">
-        <i class="fas fa-user-shield"></i>
-        <span id="adminEmailText">admin</span>
-        <span class="status-dot online" style="margin-left:auto;"></span>
-    </div>
-    <nav class="sidebar-nav">
-        <div class="nav-item active" onclick="showSection('dashboard')"><i class="fas fa-home"></i> Dashboard</div>
-        <div class="nav-item" onclick="showSection('appConfig')"><i class="fas fa-sliders"></i> App Config</div>
-        <div class="nav-item" onclick="showSection('allLinks')"><i class="fas fa-link"></i> All Links</div>
-        <div class="nav-item" onclick="showSection('adConfig')"><i class="fas fa-ad"></i> Ad System</div>
-        <div class="nav-item" onclick="showSection('badgeConfig')"><i class="fas fa-trophy"></i> Badge & XP</div>
-        <div class="nav-item" onclick="showSection('vipUsers')"><i class="fas fa-crown"></i> VIP Users</div>
-        <div class="nav-item" onclick="showSection('pushNotif')"><i class="fas fa-bell"></i> Push Notifications</div>
-    </nav>
-    <div class="sidebar-footer">
-        <span>v3.1 · VHIR</span>
-        <button class="logout-btn" onclick="handleAdminLogout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
-    </div>
+  <div class="sidebar-header">
+    <h1>🧠 HabitNode</h1>
+    <p>Admin Control Panel v3.2 (Fixed)</p>
+  </div>
+
+  <div class="admin-email" id="adminEmailDisplay">
+    <i class="fas fa-user-shield"></i>
+    <span id="adminEmailText">admin</span>
+    <span class="status-dot online" style="margin-left:auto;"></span>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-item active" data-section="dashboard" onclick="showSection('dashboard', this)"><i class="fas fa-home"></i> Dashboard</div>
+    <div class="nav-item" data-section="appConfig" onclick="showSection('appConfig', this)"><i class="fas fa-sliders"></i> App Config</div>
+    <div class="nav-item" data-section="forceUpdate" onclick="showSection('forceUpdate', this)"><i class="fas fa-rocket"></i> Force Update</div>
+    <div class="nav-item" data-section="allLinks" onclick="showSection('allLinks', this)"><i class="fas fa-link"></i> All Links</div>
+    <div class="nav-item" data-section="adConfig" onclick="showSection('adConfig', this)"><i class="fas fa-ad"></i> Ad System</div>
+    <div class="nav-item" data-section="badgeConfig" onclick="showSection('badgeConfig', this)"><i class="fas fa-trophy"></i> Badge & XP</div>
+    <div class="nav-item" data-section="vipUsers" onclick="showSection('vipUsers', this)"><i class="fas fa-crown"></i> VIP Users</div>
+    <div class="nav-item" data-section="pushNotif" onclick="showSection('pushNotif', this)"><i class="fas fa-bell"></i> Push Notifications</div>
+  </nav>
+
+  <div class="sidebar-footer">
+    <span>v3.2 · VHIR</span>
+    <button class="logout-btn" onclick="handleAdminLogout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+  </div>
 </div>
 
-<!-- ═══ MOBILE MENU ═══ -->
-<button id="mobileMenuBtn" onclick="document.getElementById('sidebar').classList.toggle('open')"
-    style="display:none; position:fixed; top:16px; left:16px; z-index:200; background:var(--primary); color:white; border:none; border-radius:12px; padding:12px 16px; font-size:18px; cursor:pointer;">
-    <i class="fas fa-bars"></i>
+<!-- MOBILE MENU -->
+<button id="mobileMenuBtn"
+  onclick="document.getElementById('sidebar').classList.toggle('open')"
+  style="display:none; position:fixed; top:16px; left:16px; z-index:200; background:var(--primary); color:white; border:none; border-radius:12px; padding:12px 16px; font-size:18px; cursor:pointer;">
+  <i class="fas fa-bars"></i>
 </button>
 
 <div class="main">
 
-<!-- ═══════════════════════════════════════ -->
-<!-- DASHBOARD -->
-<!-- ═══════════════════════════════════════ -->
-<div class="section active" id="sec-dashboard">
-    <div class="page-header"><div><h2>Dashboard</h2><p class="subtitle">Overview of your HabitNode app</p></div></div>
+  <!-- DASHBOARD -->
+  <div class="section active" id="sec-dashboard">
+    <div class="page-header">
+      <div>
+        <h2>Dashboard</h2>
+        <p class="subtitle">Overview of your HabitNode app</p>
+      </div>
+    </div>
+
     <div class="stats-row">
-        <div class="stat-card"><div class="stat-icon">👑</div><div class="stat-value" id="stat-vip">-</div><div class="stat-label">VIP Users</div></div>
-        <div class="stat-card"><div class="stat-icon">✅</div><div class="stat-value" id="stat-active">-</div><div class="stat-label">Active VIPs</div></div>
-        <div class="stat-card"><div class="stat-icon">⏰</div><div class="stat-value" id="stat-expired">-</div><div class="stat-label">Expired</div></div>
-        <div class="stat-card"><div class="stat-icon">📢</div><div class="stat-value" id="stat-ads">ON</div><div class="stat-label">Ads Status</div></div>
-    </div>
-
-    <!-- Recent Notifications -->
-    <div class="card">
-        <div class="card-title"><i class="fas fa-bell"></i> Recent Notifications</div>
-        <div id="recent-notifications">
-            <p style="color:var(--text-muted); font-size:13px;">Loading...</p>
-        </div>
+      <div class="stat-card"><div class="stat-icon">👑</div><div class="stat-value" id="stat-vip">-</div><div class="stat-label">VIP Users</div></div>
+      <div class="stat-card"><div class="stat-icon">✅</div><div class="stat-value" id="stat-active">-</div><div class="stat-label">Active VIPs</div></div>
+      <div class="stat-card"><div class="stat-icon">⏰</div><div class="stat-value" id="stat-expired">-</div><div class="stat-label">Expired</div></div>
+      <div class="stat-card"><div class="stat-icon">📢</div><div class="stat-value" id="stat-ads">-</div><div class="stat-label">Ads Status</div></div>
     </div>
 
     <div class="card">
-        <div class="card-title"><i class="fas fa-info-circle"></i> Quick Info</div>
-        <p style="color:var(--text-secondary); line-height:1.8;">
-            Welcome to HabitNode Admin Panel v3.1 with <strong>Login Security</strong> & <strong>Push Notifications</strong>.
-            Every single setting in the app can be controlled from here.
-            Changes reflect in the app when users next open it. Use "Force Config Refresh" to trigger immediate update.
-            <br><br>
-            <strong>📢 Push Notification System:</strong> Notifications are saved to Firestore. The app polls for new notifications
-            on each launch and shows them locally. No Cloud Functions needed = $0 cost.
-        </p>
+      <div class="card-title"><i class="fas fa-bell"></i> Recent Notifications</div>
+      <div id="recent-notifications"><p style="color:var(--text-muted); font-size:13px;">Loading...</p></div>
     </div>
-</div>
 
-<!-- ═══════════════════════════════════════ -->
-<!-- APP CONFIG -->
-<!-- ═══════════════════════════════════════ -->
-<div class="section" id="sec-appConfig">
+    <div class="card">
+      <div class="card-title"><i class="fas fa-info-circle"></i> Quick Info</div>
+      <p style="color:var(--text-secondary); line-height:1.8;">
+        This panel writes to Firestore: <code>admin/app_config</code>, and push notifications to <code>admin/push_notification</code>.
+        <br/><br/>
+        If login fails with <code>auth/unauthorized-domain</code>, add your domain in Firebase Auth → Authorized domains.
+      </p>
+    </div>
+  </div>
+
+  <!-- APP CONFIG -->
+  <div class="section" id="sec-appConfig">
     <div class="page-header">
-        <div><h2>App Config</h2><p class="subtitle">Feature toggles, pricing, developer info</p></div>
-        <button class="btn btn-primary" onclick="saveAllConfig()"><i class="fas fa-save"></i> Save All Config</button>
+      <div>
+        <h2>App Config</h2>
+        <p class="subtitle">Feature toggles, pricing, developer info</p>
+      </div>
+      <button class="btn btn-primary" onclick="saveAllConfig()"><i class="fas fa-save"></i> Save All Config</button>
     </div>
 
-    <!-- Feature Toggles -->
     <div class="card">
-        <div class="card-title"><i class="fas fa-toggle-on"></i> Feature Toggles</div>
-        <div class="toggle-group"><div><div class="toggle-label">Enable Pro Version</div><div class="toggle-desc">Show Pro upgrade screens</div></div><div class="toggle active" id="tog-enableProVersion" onclick="toggleSwitch(this)"></div></div>
-        <div class="toggle-group"><div><div class="toggle-label">Enable Notifications</div><div class="toggle-desc">Allow habit reminders</div></div><div class="toggle active" id="tog-enableNotifications" onclick="toggleSwitch(this)"></div></div>
-        <div class="toggle-group"><div><div class="toggle-label">Enable Badges</div><div class="toggle-desc">Badge & XP system</div></div><div class="toggle active" id="tog-enableBadges" onclick="toggleSwitch(this)"></div></div>
-        <div class="toggle-group"><div><div class="toggle-label">Enable Missions</div><div class="toggle-desc">Missions screen</div></div><div class="toggle active" id="tog-enableMissions" onclick="toggleSwitch(this)"></div></div>
-        <div class="toggle-group"><div><div class="toggle-label">Enable Daily Tips</div><div class="toggle-desc">Daily tip dialog</div></div><div class="toggle active" id="tog-enableDailyTips" onclick="toggleSwitch(this)"></div></div>
-        <div class="toggle-group"><div><div class="toggle-label">Enable Smart Reminders</div><div class="toggle-desc">Smart reminder after missed habits</div></div><div class="toggle active" id="tog-enableSmartReminders" onclick="toggleSwitch(this)"></div></div>
-        <div class="toggle-group"><div><div class="toggle-label">Enable Backup</div><div class="toggle-desc">Backup/restore feature</div></div><div class="toggle active" id="tog-enableBackup" onclick="toggleSwitch(this)"></div></div>
-        <div class="toggle-group"><div><div class="toggle-label">Enable Stats</div><div class="toggle-desc">Statistics screen</div></div><div class="toggle active" id="tog-enableStats" onclick="toggleSwitch(this)"></div></div>
-        <div class="toggle-group"><div><div class="toggle-label">Enable Profile Header</div><div class="toggle-desc">Profile on dashboard</div></div><div class="toggle active" id="tog-enableProfileHeader" onclick="toggleSwitch(this)"></div></div>
-        <div class="toggle-group"><div><div class="toggle-label">Enable Skeleton Loading</div><div class="toggle-desc">Skeleton loaders</div></div><div class="toggle active" id="tog-enableSkeletonLoading" onclick="toggleSwitch(this)"></div></div>
-        <div class="toggle-group"><div><div class="toggle-label">Enable Pull to Refresh</div><div class="toggle-desc">Pull down refresh</div></div><div class="toggle active" id="tog-enablePullToRefresh" onclick="toggleSwitch(this)"></div></div>
-        <div class="toggle-group"><div><div class="toggle-label">Enable Missed Habit Dialog</div><div class="toggle-desc">Ask why missed</div></div><div class="toggle active" id="tog-enableMissedHabitDialog" onclick="toggleSwitch(this)"></div></div>
+      <div class="card-title"><i class="fas fa-toggle-on"></i> Feature Toggles</div>
+
+      <div class="toggle-group"><div><div class="toggle-label">Enable Pro Version</div><div class="toggle-desc">Show Pro upgrade screens</div></div><div class="toggle active" id="tog-enableProVersion" onclick="toggleSwitch(this)"></div></div>
+      <div class="toggle-group"><div><div class="toggle-label">Enable Notifications</div><div class="toggle-desc">Allow habit reminders</div></div><div class="toggle active" id="tog-enableNotifications" onclick="toggleSwitch(this)"></div></div>
+      <div class="toggle-group"><div><div class="toggle-label">Enable Badges</div><div class="toggle-desc">Badge & XP system</div></div><div class="toggle active" id="tog-enableBadges" onclick="toggleSwitch(this)"></div></div>
+      <div class="toggle-group"><div><div class="toggle-label">Enable Missions</div><div class="toggle-desc">Missions screen</div></div><div class="toggle active" id="tog-enableMissions" onclick="toggleSwitch(this)"></div></div>
+      <div class="toggle-group"><div><div class="toggle-label">Enable Daily Tips</div><div class="toggle-desc">Daily tip dialog</div></div><div class="toggle active" id="tog-enableDailyTips" onclick="toggleSwitch(this)"></div></div>
+      <div class="toggle-group"><div><div class="toggle-label">Enable Smart Reminders</div><div class="toggle-desc">Smart reminder after missed habits</div></div><div class="toggle active" id="tog-enableSmartReminders" onclick="toggleSwitch(this)"></div></div>
+      <div class="toggle-group"><div><div class="toggle-label">Enable Backup</div><div class="toggle-desc">Backup/restore feature</div></div><div class="toggle active" id="tog-enableBackup" onclick="toggleSwitch(this)"></div></div>
+      <div class="toggle-group"><div><div class="toggle-label">Enable Stats</div><div class="toggle-desc">Statistics screen</div></div><div class="toggle active" id="tog-enableStats" onclick="toggleSwitch(this)"></div></div>
+      <div class="toggle-group"><div><div class="toggle-label">Enable Profile Header</div><div class="toggle-desc">Profile on dashboard</div></div><div class="toggle active" id="tog-enableProfileHeader" onclick="toggleSwitch(this)"></div></div>
+      <div class="toggle-group"><div><div class="toggle-label">Enable Skeleton Loading</div><div class="toggle-desc">Skeleton loaders</div></div><div class="toggle active" id="tog-enableSkeletonLoading" onclick="toggleSwitch(this)"></div></div>
+      <div class="toggle-group"><div><div class="toggle-label">Enable Pull to Refresh</div><div class="toggle-desc">Pull down refresh</div></div><div class="toggle active" id="tog-enablePullToRefresh" onclick="toggleSwitch(this)"></div></div>
+      <div class="toggle-group"><div><div class="toggle-label">Enable Missed Habit Dialog</div><div class="toggle-desc">Ask why missed</div></div><div class="toggle active" id="tog-enableMissedHabitDialog" onclick="toggleSwitch(this)"></div></div>
+
+      <!-- NEW: Widget Prompt Toggle -->
+      <div class="toggle-group">
+        <div>
+          <div class="toggle-label">Enable Widget Prompt</div>
+          <div class="toggle-desc">Show widget banner and habit-complete prompt</div>
+        </div>
+        <div class="toggle active" id="tog-enableWidgetPrompt" onclick="toggleSwitch(this)"></div>
+      </div>
     </div>
 
-    <!-- Pricing -->
     <div class="card">
-        <div class="card-title"><i class="fas fa-tag"></i> Pricing & Subscription</div>
-        <div class="form-row">
-            <div class="form-group"><label class="form-label">Monthly Price</label><input type="text" class="form-input" id="cfg-monthlyPrice" placeholder="₹49"></div>
-            <div class="form-group"><label class="form-label">Yearly Price</label><input type="text" class="form-input" id="cfg-yearlyPrice" placeholder="₹399"></div>
-        </div>
-        <div class="form-row">
-            <div class="form-group"><label class="form-label">Pro Price</label><input type="text" class="form-input" id="cfg-proPrice" placeholder="₹399"></div>
-            <div class="form-group"><label class="form-label">Pro Product ID</label><input type="text" class="form-input" id="cfg-proProductId" placeholder="habit_node_pro"></div>
-        </div>
-        <div class="form-row">
-            <div class="form-group"><label class="form-label">Monthly Product ID</label><input type="text" class="form-input" id="cfg-monthlyProductId" placeholder="habit_node_monthly"></div>
-            <div class="form-group"><label class="form-label">Yearly Product ID</label><input type="text" class="form-input" id="cfg-yearlyProductId" placeholder="habit_node_yearly"></div>
-        </div>
-        <div class="form-row">
-            <div class="form-group"><label class="form-label">Max Free Habits</label><input type="number" class="form-input" id="cfg-maxHabitsFree" placeholder="5"></div>
-            <div class="form-group"><label class="form-label">Max Pro Habits</label><input type="number" class="form-input" id="cfg-maxHabitsPro" placeholder="999"></div>
-        </div>
-        <div class="form-group"><label class="form-label">Rewarded Extra Habits</label><input type="number" class="form-input" id="cfg-rewardedExtraHabits" placeholder="3"></div>
+      <div class="card-title"><i class="fas fa-tag"></i> Pricing & Subscription</div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Monthly Price</label><input type="text" class="form-input" id="cfg-monthlyPrice" placeholder="₹49"></div>
+        <div class="form-group"><label class="form-label">Yearly Price</label><input type="text" class="form-input" id="cfg-yearlyPrice" placeholder="₹399"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Pro Price</label><input type="text" class="form-input" id="cfg-proPrice" placeholder="₹399"></div>
+        <div class="form-group"><label class="form-label">Pro Product ID</label><input type="text" class="form-input" id="cfg-proProductId" placeholder="habit_node_pro"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Monthly Product ID</label><input type="text" class="form-input" id="cfg-monthlyProductId" placeholder="habit_node_monthly"></div>
+        <div class="form-group"><label class="form-label">Yearly Product ID</label><input type="text" class="form-input" id="cfg-yearlyProductId" placeholder="habit_node_yearly"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Max Free Habits</label><input type="number" class="form-input" id="cfg-maxHabitsFree" placeholder="5"></div>
+        <div class="form-group"><label class="form-label">Max Pro Habits</label><input type="number" class="form-input" id="cfg-maxHabitsPro" placeholder="999"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Rewarded Extra Habits</label><input type="number" class="form-input" id="cfg-rewardedExtraHabits" placeholder="3"></div>
     </div>
 
-    <!-- Developer -->
     <div class="card">
-        <div class="card-title"><i class="fas fa-user-shield"></i> Developer & Support</div>
-        <div class="form-row">
-            <div class="form-group"><label class="form-label">Developer Name</label><input type="text" class="form-input" id="cfg-developerName" placeholder="VHIR"></div>
-            <div class="form-group"><label class="form-label">Support Email</label><input type="email" class="form-input" id="cfg-supportEmail" placeholder="support@gmail.com"></div>
-        </div>
+      <div class="card-title"><i class="fas fa-user-shield"></i> Developer & Support</div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Developer Name</label><input type="text" class="form-input" id="cfg-developerName" placeholder="VHIR"></div>
+        <div class="form-group"><label class="form-label">Support Email</label><input type="email" class="form-input" id="cfg-supportEmail" placeholder="vhirsupport@gmail.com"></div>
+      </div>
     </div>
-</div>
+  </div>
 
-<!-- ═══════════════════════════════════════ -->
-<!-- ALL LINKS -->
-<!-- ═══════════════════════════════════════ -->
-<div class="section" id="sec-allLinks">
+  <!-- FORCE UPDATE (Firestore-based) -->
+  <div class="section" id="sec-forceUpdate">
     <div class="page-header">
-        <div><h2>All Links</h2><p class="subtitle">Every link used in the app — empty = hidden in app</p></div>
-        <button class="btn btn-primary" onclick="saveAllConfig()"><i class="fas fa-save"></i> Save All Links</button>
+      <div>
+        <h2>Force Update</h2>
+        <p class="subtitle">Controls stored in Firestore (admin/app_config)</p>
+      </div>
+      <button class="btn btn-primary" onclick="saveForceUpdateConfig()"><i class="fas fa-save"></i> Save Force Update</button>
     </div>
 
     <div class="card">
-        <div class="card-title"><i class="fab fa-telegram"></i> Community / Social Links</div>
-        <div class="form-group"><label class="form-label">Telegram URL</label><input type="url" class="form-input" id="link-telegramUrl" placeholder="https://t.me/yourchannel"></div>
-        <div class="form-group"><label class="form-label">YouTube URL</label><input type="url" class="form-input" id="link-youtubeUrl" placeholder="https://youtube.com/@channel"></div>
-        <div class="form-group"><label class="form-label">Facebook URL</label><input type="url" class="form-input" id="link-facebookUrl" placeholder="https://facebook.com/page"></div>
+      <div class="card-title"><i class="fas fa-rocket"></i> Update Switches</div>
+
+      <div class="toggle-group">
+        <div>
+          <div class="toggle-label">Enable Force Update</div>
+          <div class="toggle-desc">If ON, older versions will be blocked</div>
+        </div>
+        <div class="toggle" id="tog-force_update_enabled" onclick="toggleSwitch(this)"></div>
+      </div>
+
+      <div class="toggle-group">
+        <div>
+          <div class="toggle-label">Allow Skip</div>
+          <div class="toggle-desc">If ON, users can skip the update screen</div>
+        </div>
+        <div class="toggle" id="tog-allow_skip" onclick="toggleSwitch(this)"></div>
+      </div>
     </div>
 
     <div class="card">
-        <div class="card-title"><i class="fas fa-globe"></i> Website & Legal</div>
-        <div class="form-group"><label class="form-label">Website URL</label><input type="url" class="form-input" id="link-websiteUrl" placeholder="https://yourwebsite.com"></div>
-        <div class="form-group"><label class="form-label">Privacy Policy URL</label><input type="url" class="form-input" id="link-privacyPolicyUrl" placeholder="https://...privacy-policy"></div>
-        <div class="form-group"><label class="form-label">Terms & Conditions URL</label><input type="url" class="form-input" id="link-termsUrl" placeholder="https://...terms"></div>
-    </div>
+      <div class="card-title"><i class="fas fa-file-signature"></i> Update Content</div>
 
-    <div class="card">
-        <div class="card-title"><i class="fab fa-google-play"></i> Play Store Links</div>
-        <div class="form-group"><label class="form-label">Play Store App URL (Open Store)</label><input type="url" class="form-input" id="link-playStoreAppUrl" placeholder="https://play.google.com/store/apps/details?id=com.habit.node"></div>
-        <div class="form-group"><label class="form-label">Rate App URL</label><input type="text" class="form-input" id="link-playStoreRateUrl" placeholder="market://details?id=com.habit.node"></div>
-        <div class="form-group"><label class="form-label">Developer / More Apps URL</label><input type="url" class="form-input" id="link-playStoreDeveloperUrl" placeholder="https://play.google.com/store/apps/developer?id=YourName"></div>
-    </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Required Version</label>
+          <input type="text" class="form-input" id="fu-force_update_version" placeholder="2.0.0">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Update URL</label>
+          <input type="url" class="form-input" id="fu-force_update_url" placeholder="https://play.google.com/store/apps/details?id=com.habit.node">
+        </div>
+      </div>
 
-    <div class="card">
-        <div class="card-title"><i class="fas fa-share-alt"></i> Share App Message</div>
-        <div class="form-group"><label class="form-label">Message shown when user shares the app</label><textarea class="form-input" id="link-shareMessage" rows="4" placeholder="Check out HabitNode! 🚀&#10;Download now:&#10;https://play.google.com/..." style="resize:vertical;"></textarea></div>
-    </div>
-</div>
+      <div class="form-group">
+        <label class="form-label">Title</label>
+        <input type="text" class="form-input" id="fu-force_update_title" placeholder="Update Available! 🚀">
+      </div>
 
-<!-- ═══════════════════════════════════════ -->
-<!-- AD SYSTEM -->
-<!-- ═══════════════════════════════════════ -->
-<div class="section" id="sec-adConfig">
+      <div class="form-group">
+        <label class="form-label">Message</label>
+        <textarea class="form-input" id="fu-force_update_message" rows="3" style="resize:vertical;" placeholder="Please update to continue..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Features (one per line)</label>
+        <textarea class="form-input" id="fu-update_features" rows="5" style="resize:vertical;" placeholder="🚀 Faster performance&#10;🎨 New UI&#10;🐛 Bug fixes"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- ALL LINKS -->
+  <div class="section" id="sec-allLinks">
     <div class="page-header">
-        <div><h2>Ad System</h2><p class="subtitle">Control all ad networks, placements, frequency</p></div>
-        <button class="btn btn-primary" onclick="saveAllConfig()"><i class="fas fa-save"></i> Save Ad Config</button>
+      <div><h2>All Links</h2><p class="subtitle">Every link used in the app — empty = hidden in app</p></div>
+      <button class="btn btn-primary" onclick="saveAllConfig()"><i class="fas fa-save"></i> Save All Links</button>
     </div>
 
     <div class="card">
-        <div class="card-title"><i class="fas fa-power-off"></i> Master Controls</div>
-        <div class="toggle-group"><div><div class="toggle-label">Enable Ads (Master)</div><div class="toggle-desc">Turn all ads on/off</div></div><div class="toggle active" id="tog-enableAds" onclick="toggleSwitch(this)"></div></div>
-        <div class="toggle-group"><div><div class="toggle-label">Enable AdMob</div></div><div class="toggle" id="tog-enableAdMob" onclick="toggleSwitch(this)"></div></div>
-        <div class="toggle-group"><div><div class="toggle-label">Enable Unity Ads</div></div><div class="toggle active" id="tog-enableUnityAds" onclick="toggleSwitch(this)"></div></div>
-        <div class="toggle-group"><div><div class="toggle-label">Enable Banner</div></div><div class="toggle active" id="tog-enableBannerAd" onclick="toggleSwitch(this)"></div></div>
-        <div class="toggle-group"><div><div class="toggle-label">Enable Interstitial</div></div><div class="toggle active" id="tog-enableInterstitialAd" onclick="toggleSwitch(this)"></div></div>
-        <div class="toggle-group"><div><div class="toggle-label">Enable Rewarded</div></div><div class="toggle active" id="tog-enableRewardedAd" onclick="toggleSwitch(this)"></div></div>
-        <div class="toggle-group"><div><div class="toggle-label">Ad Sound</div></div><div class="toggle" id="tog-adSoundEnabled" onclick="toggleSwitch(this)"></div></div>
-        <div class="toggle-group"><div><div class="toggle-label">Ad Debug Mode</div></div><div class="toggle active" id="tog-adDebugMode" onclick="toggleSwitch(this)"></div></div>
-        <div class="toggle-group"><div><div class="toggle-label">Unity Test Mode</div></div><div class="toggle" id="tog-unityTestMode" onclick="toggleSwitch(this)"></div></div>
+      <div class="card-title"><i class="fab fa-telegram"></i> Community / Social Links</div>
+      <div class="form-group"><label class="form-label">Telegram URL</label><input type="url" class="form-input" id="link-telegramUrl" placeholder="https://t.me/yourchannel"></div>
+      <div class="form-group"><label class="form-label">YouTube URL</label><input type="url" class="form-input" id="link-youtubeUrl" placeholder="https://youtube.com/@channel"></div>
+      <div class="form-group"><label class="form-label">Facebook URL</label><input type="url" class="form-input" id="link-facebookUrl" placeholder="https://facebook.com/page"></div>
     </div>
 
     <div class="card">
-        <div class="card-title"><i class="fas fa-clock"></i> Ad Frequency</div>
-        <div class="form-row-3">
-            <div class="form-group"><label class="form-label">Interstitial Frequency</label><input type="number" class="form-input" id="ad-interstitialAdFrequency" placeholder="4"></div>
-            <div class="form-group"><label class="form-label">Max Per Session</label><input type="number" class="form-input" id="ad-maxInterstitialPerSession" placeholder="5"></div>
-            <div class="form-group"><label class="form-label">Min Seconds Between</label><input type="number" class="form-input" id="ad-minSecondsBetweenInterstitial" placeholder="120"></div>
-        </div>
+      <div class="card-title"><i class="fas fa-globe"></i> Website & Legal</div>
+      <div class="form-group"><label class="form-label">Website URL</label><input type="url" class="form-input" id="link-websiteUrl" placeholder="https://yourwebsite.com"></div>
+      <div class="form-group"><label class="form-label">Privacy Policy URL</label><input type="url" class="form-input" id="link-privacyPolicyUrl" placeholder="https://...privacy-policy"></div>
+      <div class="form-group"><label class="form-label">Terms & Conditions URL</label><input type="url" class="form-input" id="link-termsUrl" placeholder="https://...terms"></div>
     </div>
 
     <div class="card">
-        <div class="card-title"><i class="fab fa-google"></i> AdMob IDs</div>
-        <div class="form-group"><label class="form-label">App ID</label><input type="text" class="form-input" id="ad-admobAppId" placeholder="ca-app-pub-xxx~xxx"></div>
-        <div class="form-group"><label class="form-label">Banner Ad Unit ID</label><input type="text" class="form-input" id="ad-admobBannerAdUnitId" placeholder="ca-app-pub-xxx/xxx"></div>
-        <div class="form-group"><label class="form-label">Interstitial Ad Unit ID</label><input type="text" class="form-input" id="ad-admobInterstitialAdUnitId" placeholder="ca-app-pub-xxx/xxx"></div>
-        <div class="form-group"><label class="form-label">Rewarded Ad Unit ID</label><input type="text" class="form-input" id="ad-admobRewardedAdUnitId" placeholder="ca-app-pub-xxx/xxx"></div>
+      <div class="card-title"><i class="fab fa-google-play"></i> Play Store Links</div>
+      <div class="form-group"><label class="form-label">Play Store App URL</label><input type="url" class="form-input" id="link-playStoreAppUrl" placeholder="https://play.google.com/store/apps/details?id=com.habit.node"></div>
+      <div class="form-group"><label class="form-label">Rate App URL</label><input type="text" class="form-input" id="link-playStoreRateUrl" placeholder="market://details?id=com.habit.node"></div>
+      <div class="form-group"><label class="form-label">Developer URL</label><input type="url" class="form-input" id="link-playStoreDeveloperUrl" placeholder="https://play.google.com/store/apps/developer?id=YourName"></div>
     </div>
 
     <div class="card">
-        <div class="card-title"><i class="fas fa-gamepad"></i> Unity Ads IDs</div>
-        <div class="form-row">
-            <div class="form-group"><label class="form-label">Android Game ID</label><input type="text" class="form-input" id="ad-unityAndroidGameId" placeholder="6073314"></div>
-            <div class="form-group"><label class="form-label">iOS Game ID</label><input type="text" class="form-input" id="ad-unityIosGameId" placeholder="6073315"></div>
-        </div>
-        <div class="form-row-3">
-            <div class="form-group"><label class="form-label">Interstitial Placement</label><input type="text" class="form-input" id="ad-unityInterstitialPlacementId" placeholder="Interstitial_Android"></div>
-            <div class="form-group"><label class="form-label">Rewarded Placement</label><input type="text" class="form-input" id="ad-unityRewardedPlacementId" placeholder="Rewarded_Android"></div>
-            <div class="form-group"><label class="form-label">Banner Placement</label><input type="text" class="form-input" id="ad-unityBannerPlacementId" placeholder="Banner_Android"></div>
-        </div>
+      <div class="card-title"><i class="fas fa-share-alt"></i> Share App Message</div>
+      <div class="form-group">
+        <label class="form-label">Share message</label>
+        <textarea class="form-input" id="link-shareMessage" rows="4" style="resize:vertical;" placeholder="Check out HabitNode..."></textarea>
+      </div>
     </div>
-</div>
+  </div>
 
-<!-- ═══════════════════════════════════════ -->
-<!-- BADGE & XP -->
-<!-- ═══════════════════════════════════════ -->
-<div class="section" id="sec-badgeConfig">
+  <!-- AD SYSTEM -->
+  <div class="section" id="sec-adConfig">
     <div class="page-header">
-        <div><h2>Badge & XP System</h2><p class="subtitle">Control badge thresholds and level system</p></div>
-        <button class="btn btn-primary" onclick="saveAllConfig()"><i class="fas fa-save"></i> Save Badge Config</button>
+      <div><h2>Ad System</h2><p class="subtitle">Control all ad networks, placements, frequency</p></div>
+      <button class="btn btn-primary" onclick="saveAllConfig()"><i class="fas fa-save"></i> Save Ad Config</button>
     </div>
 
     <div class="card">
-        <div class="card-title"><i class="fas fa-fire"></i> Badge Thresholds (comma separated)</div>
-        <div class="form-row">
-            <div class="form-group"><label class="form-label">Streak Thresholds</label><input type="text" class="form-input" id="badge-streakBadgeThresholds" placeholder="3,7,14,30,60,100,200,365"></div>
-            <div class="form-group"><label class="form-label">Completion Thresholds</label><input type="text" class="form-input" id="badge-completionBadgeThresholds" placeholder="1,10,50,100,250,500,1000,2500"></div>
-        </div>
-        <div class="form-row">
-            <div class="form-group"><label class="form-label">Perfect Day Thresholds</label><input type="text" class="form-input" id="badge-perfectDayThresholds" placeholder="1,7,14,30,90"></div>
-            <div class="form-group"><label class="form-label">Comeback Thresholds</label><input type="text" class="form-input" id="badge-comebackThresholds" placeholder="1,3,5,10"></div>
-        </div>
-        <div class="form-row">
-            <div class="form-group"><label class="form-label">Time Based Thresholds</label><input type="text" class="form-input" id="badge-timeBasedThresholds" placeholder="5,15,30,50"></div>
-            <div class="form-group"><label class="form-label">Variety Thresholds</label><input type="text" class="form-input" id="badge-varietyThresholds" placeholder="3,5,8,10"></div>
-        </div>
-        <div class="form-group"><label class="form-label">App Usage Thresholds</label><input type="text" class="form-input" id="badge-appUsageThresholds" placeholder="7,30,100,365"></div>
+      <div class="card-title"><i class="fas fa-power-off"></i> Master Controls</div>
+      <div class="toggle-group"><div><div class="toggle-label">Enable Ads (Master)</div><div class="toggle-desc">Turn all ads on/off</div></div><div class="toggle active" id="tog-enableAds" onclick="toggleSwitch(this)"></div></div>
+      <div class="toggle-group"><div><div class="toggle-label">Enable AdMob</div></div><div class="toggle" id="tog-enableAdMob" onclick="toggleSwitch(this)"></div></div>
+      <div class="toggle-group"><div><div class="toggle-label">Enable Unity Ads</div></div><div class="toggle active" id="tog-enableUnityAds" onclick="toggleSwitch(this)"></div></div>
+      <div class="toggle-group"><div><div class="toggle-label">Enable Banner</div></div><div class="toggle active" id="tog-enableBannerAd" onclick="toggleSwitch(this)"></div></div>
+      <div class="toggle-group"><div><div class="toggle-label">Enable Interstitial</div></div><div class="toggle active" id="tog-enableInterstitialAd" onclick="toggleSwitch(this)"></div></div>
+      <div class="toggle-group"><div><div class="toggle-label">Enable Rewarded</div></div><div class="toggle active" id="tog-enableRewardedAd" onclick="toggleSwitch(this)"></div></div>
+      <div class="toggle-group"><div><div class="toggle-label">Ad Sound</div></div><div class="toggle" id="tog-adSoundEnabled" onclick="toggleSwitch(this)"></div></div>
+      <div class="toggle-group"><div><div class="toggle-label">Ad Debug Mode</div></div><div class="toggle active" id="tog-adDebugMode" onclick="toggleSwitch(this)"></div></div>
+      <div class="toggle-group"><div><div class="toggle-label">Unity Test Mode</div></div><div class="toggle" id="tog-unityTestMode" onclick="toggleSwitch(this)"></div></div>
     </div>
 
     <div class="card">
-        <div class="card-title"><i class="fas fa-star"></i> Level System</div>
-        <div class="form-group"><label class="form-label">Level XP Thresholds (20 values)</label><input type="text" class="form-input" id="badge-levelThresholds" placeholder="0,50,150,300,500,800,1200,1700,2400,3200,4200,5500,7000,9000,11500,14500,18000,22000,27000,33000"></div>
+      <div class="card-title"><i class="fas fa-clock"></i> Ad Frequency</div>
+      <div class="form-row-3">
+        <div class="form-group"><label class="form-label">Interstitial Frequency</label><input type="number" class="form-input" id="ad-interstitialAdFrequency" placeholder="4"></div>
+        <div class="form-group"><label class="form-label">Max Per Session</label><input type="number" class="form-input" id="ad-maxInterstitialPerSession" placeholder="5"></div>
+        <div class="form-group"><label class="form-label">Min Seconds Between</label><input type="number" class="form-input" id="ad-minSecondsBetweenInterstitial" placeholder="120"></div>
+      </div>
     </div>
-</div>
 
-<!-- ═══════════════════════════════════════ -->
-<!-- VIP USERS -->
-<!-- ═══════════════════════════════════════ -->
-<div class="section" id="sec-vipUsers">
+    <div class="card">
+      <div class="card-title"><i class="fab fa-google"></i> AdMob IDs</div>
+      <div class="form-group"><label class="form-label">App ID</label><input type="text" class="form-input" id="ad-admobAppId" placeholder="ca-app-pub-xxx~xxx"></div>
+      <div class="form-group"><label class="form-label">Banner Ad Unit ID</label><input type="text" class="form-input" id="ad-admobBannerAdUnitId" placeholder="ca-app-pub-xxx/xxx"></div>
+      <div class="form-group"><label class="form-label">Interstitial Ad Unit ID</label><input type="text" class="form-input" id="ad-admobInterstitialAdUnitId" placeholder="ca-app-pub-xxx/xxx"></div>
+      <div class="form-group"><label class="form-label">Rewarded Ad Unit ID</label><input type="text" class="form-input" id="ad-admobRewardedAdUnitId" placeholder="ca-app-pub-xxx/xxx"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><i class="fas fa-gamepad"></i> Unity Ads IDs</div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Android Game ID</label><input type="text" class="form-input" id="ad-unityAndroidGameId" placeholder="6073314"></div>
+        <div class="form-group"><label class="form-label">iOS Game ID</label><input type="text" class="form-input" id="ad-unityIosGameId" placeholder="6073315"></div>
+      </div>
+      <div class="form-row-3">
+        <div class="form-group"><label class="form-label">Interstitial Placement</label><input type="text" class="form-input" id="ad-unityInterstitialPlacementId" placeholder="Interstitial_Android"></div>
+        <div class="form-group"><label class="form-label">Rewarded Placement</label><input type="text" class="form-input" id="ad-unityRewardedPlacementId" placeholder="Rewarded_Android"></div>
+        <div class="form-group"><label class="form-label">Banner Placement</label><input type="text" class="form-input" id="ad-unityBannerPlacementId" placeholder="Banner_Android"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BADGE -->
+  <div class="section" id="sec-badgeConfig">
     <div class="page-header">
-        <div><h2>VIP Users</h2><p class="subtitle">Manage VIP access, device binding, expiry</p></div>
-        <button class="btn btn-gold" onclick="showAddVipModal()"><i class="fas fa-user-plus"></i> Add VIP User</button>
+      <div><h2>Badge & XP System</h2><p class="subtitle">Control badge thresholds and level system</p></div>
+      <button class="btn btn-primary" onclick="saveAllConfig()"><i class="fas fa-save"></i> Save Badge Config</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><i class="fas fa-fire"></i> Badge Thresholds (comma separated)</div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Streak Thresholds</label><input type="text" class="form-input" id="badge-streakBadgeThresholds" placeholder="3,7,14,30,60,100,200,365"></div>
+        <div class="form-group"><label class="form-label">Completion Thresholds</label><input type="text" class="form-input" id="badge-completionBadgeThresholds" placeholder="1,10,50,100,250,500,1000,2500"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Perfect Day Thresholds</label><input type="text" class="form-input" id="badge-perfectDayThresholds" placeholder="1,7,14,30,90"></div>
+        <div class="form-group"><label class="form-label">Comeback Thresholds</label><input type="text" class="form-input" id="badge-comebackThresholds" placeholder="1,3,5,10"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Time Based Thresholds</label><input type="text" class="form-input" id="badge-timeBasedThresholds" placeholder="5,15,30,50"></div>
+        <div class="form-group"><label class="form-label">Variety Thresholds</label><input type="text" class="form-input" id="badge-varietyThresholds" placeholder="3,5,8,10"></div>
+      </div>
+      <div class="form-group"><label class="form-label">App Usage Thresholds</label><input type="text" class="form-input" id="badge-appUsageThresholds" placeholder="7,30,100,365"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><i class="fas fa-star"></i> Level System</div>
+      <div class="form-group"><label class="form-label">Level XP Thresholds</label><input type="text" class="form-input" id="badge-levelThresholds" placeholder="0,50,150,300,500,800,1200,1700,2400,3200,4200,5500,7000,9000,11500,14500,18000,22000,27000,33000"></div>
+    </div>
+  </div>
+
+  <!-- VIP USERS -->
+  <div class="section" id="sec-vipUsers">
+    <div class="page-header">
+      <div><h2>VIP Users</h2><p class="subtitle">Manage VIP access, device binding, expiry</p></div>
+      <button class="btn btn-gold" onclick="showAddVipModal()"><i class="fas fa-user-plus"></i> Add VIP User</button>
     </div>
     <div class="card">
-        <div class="table-container">
-            <table>
-                <thead><tr><th>Email</th><th>Status</th><th>Expiry Date</th><th>Device Bound</th><th>Actions</th></tr></thead>
-                <tbody id="vip-table-body"><tr><td colspan="5" style="text-align:center; color:var(--text-muted); padding:40px;">Loading...</td></tr></tbody>
-            </table>
-        </div>
+      <div class="table-container">
+        <table>
+          <thead><tr><th>Email</th><th>Status</th><th>Expiry Date</th><th>Device Bound</th><th>Actions</th></tr></thead>
+          <tbody id="vip-table-body"><tr><td colspan="5" style="text-align:center; color:var(--text-muted); padding:40px;">Loading...</td></tr></tbody>
+        </table>
+      </div>
     </div>
-</div>
+  </div>
 
-<!-- ═══════════════════════════════════════ -->
-<!-- 🆕 PUSH NOTIFICATIONS (FULLY FIXED) -->
-<!-- ═══════════════════════════════════════ -->
-<div class="section" id="sec-pushNotif">
-    <div class="page-header"><div><h2>Push Notifications</h2><p class="subtitle">Send notifications to all app users & force config refresh</p></div></div>
+  <!-- PUSH NOTIF -->
+  <div class="section" id="sec-pushNotif">
+    <div class="page-header">
+      <div><h2>Push Notifications</h2><p class="subtitle">Send notifications to all app users & force config refresh</p></div>
+    </div>
 
-    <!-- How It Works -->
     <div class="card" style="border-left:3px solid var(--primary);">
-        <div class="card-title"><i class="fas fa-info-circle"></i> How Push Notifications Work</div>
-        <p style="color:var(--text-secondary); line-height:1.8; font-size:13px;">
-            <strong>1.</strong> You compose a notification here and click "Send".<br>
-            <strong>2.</strong> The notification is saved to Firestore (<code>admin/push_notification</code>).<br>
-            <strong>3.</strong> When any user opens the app, it checks for new notifications.<br>
-            <strong>4.</strong> If there's a new notification (newer than last seen), it shows as a local notification.<br>
-            <strong>5.</strong> <strong>Cost:</strong> ~1 Firestore read per user per app open = practically FREE.<br>
-            <strong>6.</strong> <strong>No Cloud Functions or server needed!</strong>
-        </p>
+      <div class="card-title"><i class="fas fa-info-circle"></i> How Push Notifications Work</div>
+      <p style="color:var(--text-secondary); line-height:1.8; font-size:13px;">
+        Stored in Firestore: <code>admin/push_notification</code>. App polls on launch.
+      </p>
     </div>
 
-    <!-- Compose -->
     <div class="card">
-        <div class="card-title"><i class="fas fa-paper-plane"></i> Compose Notification</div>
-        <div class="form-group">
-            <label class="form-label">Title</label>
-            <input type="text" class="form-input" id="notif-title" placeholder="🔔 New Update!" oninput="updateNotifPreview()">
-        </div>
-        <div class="form-group">
-            <label class="form-label">Body</label>
-            <textarea class="form-input" id="notif-body" rows="3" placeholder="Check out the latest features..." style="resize:vertical;" oninput="updateNotifPreview()"></textarea>
-        </div>
+      <div class="card-title"><i class="fas fa-paper-plane"></i> Compose Notification</div>
+      <div class="form-group">
+        <label class="form-label">Title</label>
+        <input type="text" class="form-input" id="notif-title" placeholder="🔔 New Update!" oninput="updateNotifPreview()">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Body</label>
+        <textarea class="form-input" id="notif-body" rows="3" placeholder="Check out the latest features..." style="resize:vertical;" oninput="updateNotifPreview()"></textarea>
+      </div>
 
-        <!-- Live Preview -->
-        <div class="notif-preview" id="notif-preview-card">
-            <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
-                <div style="width:36px; height:36px; background:linear-gradient(135deg,var(--primary),var(--gold)); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:16px;">🧠</div>
-                <div>
-                    <div style="font-size:11px; color:var(--text-muted);">HabitNode · just now</div>
-                </div>
-            </div>
-            <h4 id="notif-preview-title">🔔 Notification Title</h4>
-            <p id="notif-preview-body">Notification body text...</p>
+      <div class="notif-preview" id="notif-preview-card">
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+          <div style="width:36px; height:36px; background:linear-gradient(135deg,var(--primary),var(--gold)); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:16px;">🧠</div>
+          <div><div style="font-size:11px; color:var(--text-muted);">HabitNode · just now</div></div>
         </div>
+        <h4 id="notif-preview-title">🔔 Notification Title</h4>
+        <p id="notif-preview-body">Notification body text...</p>
+      </div>
 
-        <div style="margin-top:20px; display:flex; gap:12px; flex-wrap:wrap;">
-            <button class="btn btn-primary" onclick="sendPushNotification()"><i class="fas fa-paper-plane"></i> Send to All Users</button>
-            <button class="btn btn-success" onclick="triggerConfigUpdate()"><i class="fas fa-sync"></i> Force Config Refresh</button>
-        </div>
+      <div style="margin-top:20px; display:flex; gap:12px; flex-wrap:wrap;">
+        <button class="btn btn-primary" onclick="sendPushNotification()"><i class="fas fa-paper-plane"></i> Send to All Users</button>
+        <button class="btn btn-success" onclick="triggerConfigUpdate()"><i class="fas fa-sync"></i> Force Config Refresh</button>
+      </div>
     </div>
 
-    <!-- Quick Templates -->
     <div class="card">
-        <div class="card-title"><i class="fas fa-bolt"></i> Quick Templates</div>
-        <div style="display:flex; gap:10px; flex-wrap:wrap;">
-            <button class="btn btn-sm btn-primary" onclick="applyTemplate('🔔 Don\\'t Forget!', 'Complete your habits today. Small steps lead to big results! 💪')">Daily Reminder</button>
-            <button class="btn btn-sm btn-gold" onclick="applyTemplate('🎉 New Feature!', 'We\\'ve added exciting new features. Open the app to explore! 🚀')">New Feature</button>
-            <button class="btn btn-sm btn-success" onclick="applyTemplate('🏆 Weekend Challenge!', 'Can you complete 100% of your habits this weekend? Let\\'s go! 🔥')">Weekend Challenge</button>
-            <button class="btn btn-sm btn-danger" onclick="applyTemplate('⚡ Update Available!', 'A new version is available. Update now for the best experience! ✨')">App Update</button>
-            <button class="btn btn-sm" style="background:var(--warning);color:#333;" onclick="applyTemplate('💎 VIP Sale!', 'Limited time: Get VIP access at a special price. Don\\'t miss out! 👑')">VIP Promo</button>
-        </div>
+      <div class="card-title"><i class="fas fa-history"></i> Notification History</div>
+      <div id="notification-history"><p style="color:var(--text-muted); font-size:13px;">Loading...</p></div>
     </div>
+  </div>
 
-    <!-- Notification History -->
-    <div class="card">
-        <div class="card-title"><i class="fas fa-history"></i> Notification History</div>
-        <div id="notification-history">
-            <p style="color:var(--text-muted); font-size:13px;">Loading...</p>
-        </div>
-    </div>
-</div>
+</div><!-- main -->
 
-</div><!-- end .main -->
-
-<!-- ═══ ADD VIP MODAL ═══ -->
+<!-- VIP MODAL -->
 <div class="modal-overlay" id="addVipModal">
-    <div class="modal">
-        <h3>👑 Add VIP User</h3>
-        <div class="form-group"><label class="form-label">Email</label><input type="email" class="form-input" id="vip-email" placeholder="user@gmail.com"></div>
-        <div class="form-group"><label class="form-label">Password</label><input type="text" class="form-input" id="vip-password" placeholder="Strong password (min 6 chars)"></div>
-        <div class="form-group">
-            <label class="form-label">Expiry Date (leave empty = Lifetime)</label>
-            <input type="datetime-local" class="form-input" id="vip-expiry">
-        </div>
-        <div style="display:flex; gap:12px; margin-top:24px;">
-            <button class="btn btn-gold" onclick="createVipUser()" style="flex:1;"><i class="fas fa-crown"></i> Create VIP</button>
-            <button class="btn btn-danger btn-sm" onclick="closeVipModal()">Cancel</button>
-        </div>
+  <div class="modal">
+    <h3>👑 Add VIP User</h3>
+    <div class="form-group"><label class="form-label">Email</label><input type="email" class="form-input" id="vip-email" placeholder="user@gmail.com"></div>
+    <div class="form-group"><label class="form-label">Password</label><input type="text" class="form-input" id="vip-password" placeholder="Strong password (min 6 chars)"></div>
+    <div class="form-group">
+      <label class="form-label">Expiry Date (leave empty = Lifetime)</label>
+      <input type="datetime-local" class="form-input" id="vip-expiry">
     </div>
+    <div style="display:flex; gap:12px; margin-top:24px;">
+      <button class="btn btn-gold" onclick="createVipUser()" style="flex:1;"><i class="fas fa-crown"></i> Create VIP</button>
+      <button class="btn btn-danger btn-sm" onclick="closeVipModal()">Cancel</button>
+    </div>
+  </div>
 </div>
 
-<!-- ═══════════════════════════════════════════════════════════════ -->
-<!-- FIREBASE + ADMIN LOGIN + ALL LOGIC -->
-<!-- ═══════════════════════════════════════════════════════════════ -->
 <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getFirestore, doc, setDoc, getDoc, getDocs, collection, deleteDoc, updateDoc, Timestamp, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, doc, setDoc, getDoc, getDocs, collection, deleteDoc, updateDoc, Timestamp, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyCn61W9WELzap0PlE0VlZcbOFdKErQvgfk",
-        authDomain: "habit-flow-vr.firebaseapp.com",
-        projectId: "habit-flow-vr",
-        storageBucket: "habit-flow-vr.firebasestorage.app",
-        messagingSenderId: "972762960500",
-        appId: "1:972762960500:web:9264b3586e64b419c33721",
-        measurementId: "G-N0CEHH9DGQ"
-    };
+  // ✅ Your Firebase config (kept as you provided)
+  const firebaseConfig = {
+    apiKey: "AIzaSyCn61W9WELzap0PlE0VlZcbOFdKErQvgfk",
+    authDomain: "habit-flow-vr.firebaseapp.com",
+    projectId: "habit-flow-vr",
+    storageBucket: "habit-flow-vr.firebasestorage.app",
+    messagingSenderId: "972762960500",
+    appId: "1:972762960500:web:9264b3586e64b419c33721",
+    measurementId: "G-N0CEHH9DGQ"
+  };
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const auth = getAuth(app);
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const auth = getAuth(app);
 
-    // Make available globally
-    window.db = db;
-    window.auth = auth;
-    window.fbDoc = doc;
-    window.setDoc = setDoc;
-    window.getDoc = getDoc;
-    window.getDocs = getDocs;
-    window.fbCollection = collection;
-    window.deleteDoc = deleteDoc;
-    window.updateDoc = updateDoc;
-    window.Timestamp = Timestamp;
-    window.fbQuery = query;
-    window.fbOrderBy = orderBy;
-    window.fbLimit = limit;
-    window.createUserWithEmailAndPassword = createUserWithEmailAndPassword;
-    window.signInWithEmailAndPassword = signInWithEmailAndPassword;
-    window.signOut = signOut;
+  // Global error catcher (helps debugging)
+  window.addEventListener('error', (e) => {
+    showToast("JS Error: " + (e?.message || "Unknown"), "error");
+    console.error(e);
+  });
 
-    // ═══════════════════════════════════════
-    // 🔐 ADMIN LOGIN / AUTH STATE
-    // ═══════════════════════════════════════
+  // ─────────────────────────────────────────────
+  // Helpers
+  // ─────────────────────────────────────────────
+  function showToast(message, type) {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.className = 'toast toast-' + (type || 'success') + ' show';
+    setTimeout(() => toast.classList.remove('show'), 3500);
+  }
 
-    let adminEmail = '';
-    let adminPassword = '';
+  function setVal(id, val) {
+    const el = document.getElementById(id);
+    if (el && val !== undefined && val !== null) el.value = val;
+  }
+  function setToggle(id, val) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (val === true || val === 'true') el.classList.add('active');
+    else el.classList.remove('active');
+  }
+  function getToggle(id) {
+    return document.getElementById(id)?.classList.contains('active') || false;
+  }
+  function getVal(id) {
+    return document.getElementById(id)?.value || '';
+  }
+  function getIntVal(id, fallback) {
+    const v = parseInt(getVal(id));
+    return isNaN(v) ? fallback : v;
+  }
+  function parseIntList(id) {
+    const raw = getVal(id).trim();
+    if (!raw) return null;
+    try {
+      return raw.split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n));
+    } catch(e) { return null; }
+  }
+  function intListToString(arr) {
+    if (!arr || !Array.isArray(arr)) return '';
+    return arr.join(', ');
+  }
 
-    onAuthStateChanged(auth, (user) => {
-        if (user) {
-            document.getElementById('loginOverlay').classList.add('hidden');
-            document.getElementById('adminEmailText').textContent = user.email || 'Admin';
-            adminEmail = user.email || '';
-            loadAllConfig();
-            loadVipUsers();
-            loadNotificationHistory();
+  function timeAgo(ts) {
+    if (!ts) return '';
+    try {
+      const d = ts.toDate ? ts.toDate() : new Date(ts);
+      const now = new Date();
+      const diffMs = now - d;
+      const diffMins = Math.floor(diffMs / 60000);
+      const diffHours = Math.floor(diffMs / 3600000);
+      const diffDays = Math.floor(diffMs / 86400000);
+      if (diffMins < 1) return 'just now';
+      if (diffMins < 60) return diffMins + ' min ago';
+      if (diffHours < 24) return diffHours + ' hour' + (diffHours > 1 ? 's' : '') + ' ago';
+      if (diffDays < 30) return diffDays + ' day' + (diffDays > 1 ? 's' : '') + ' ago';
+      return d.toLocaleString();
+    } catch(e) { return ''; }
+  }
+
+  // ─────────────────────────────────────────────
+  // UI functions
+  // ─────────────────────────────────────────────
+  function toggleSwitch(el) {
+    el.classList.toggle('active');
+  }
+
+  function showSection(name, el) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    const target = document.getElementById('sec-' + name);
+    if (target) target.classList.add('active');
+
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+    if (el) {
+      el.classList.add('active');
+    } else {
+      const nav = document.querySelector(`.nav-item[data-section="${name}"]`);
+      if (nav) nav.classList.add('active');
+    }
+
+    document.getElementById('sidebar').classList.remove('open');
+  }
+
+  // Expose for inline onclick
+  window.toggleSwitch = toggleSwitch;
+  window.showSection = showSection;
+  window.showToast = showToast;
+
+  // ─────────────────────────────────────────────
+  // Auth
+  // ─────────────────────────────────────────────
+  let adminEmail = '';
+  let adminPassword = '';
+
+  onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      document.getElementById('loginOverlay').classList.add('hidden');
+      document.getElementById('adminEmailText').textContent = user.email || 'Admin';
+      adminEmail = user.email || '';
+      await loadAllConfig();
+      await loadVipUsers();
+      await loadNotificationHistory();
+    } else {
+      document.getElementById('loginOverlay').classList.remove('hidden');
+    }
+  });
+
+  async function handleAdminLogin() {
+    const email = getVal('loginEmail').trim();
+    const password = getVal('loginPassword').trim();
+    const errorEl = document.getElementById('loginError');
+    const spinner = document.getElementById('loginSpinner');
+    const btn = document.getElementById('loginBtn');
+
+    if (!email || !password) {
+      errorEl.textContent = 'Please enter email and password';
+      errorEl.classList.add('show');
+      return;
+    }
+
+    errorEl.classList.remove('show');
+    btn.style.display = 'none';
+    spinner.classList.add('show');
+
+    adminPassword = password;
+
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+    } catch(e) {
+      let msg = 'Login failed. Check your credentials.';
+      if (e.code === 'auth/unauthorized-domain') {
+        msg = 'Unauthorized domain.\nFix: Firebase Console → Authentication → Settings → Authorized domains → add your domain (localhost if testing).';
+      } else if (e.code === 'auth/user-not-found') msg = 'Admin account not found.';
+      else if (e.code === 'auth/wrong-password') msg = 'Incorrect password.';
+      else if (e.code === 'auth/invalid-credential') msg = 'Invalid credentials.';
+      else if (e.code === 'auth/too-many-requests') msg = 'Too many attempts. Try later.';
+      else if (e?.message) msg = e.message;
+
+      errorEl.textContent = msg;
+      errorEl.classList.add('show');
+      console.error(e);
+    } finally {
+      btn.style.display = 'inline-flex';
+      spinner.classList.remove('show');
+    }
+  }
+
+  async function handleAdminLogout() {
+    if (!confirm('Are you sure you want to logout?')) return;
+    try {
+      await signOut(auth);
+      adminPassword = '';
+      showToast('Logged out successfully', 'success');
+    } catch(e) {
+      showToast('Logout error: ' + e.message, 'error');
+    }
+  }
+
+  window.handleAdminLogin = handleAdminLogin;
+  window.handleAdminLogout = handleAdminLogout;
+
+  document.getElementById('loginPassword')?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') handleAdminLogin();
+  });
+
+  // ─────────────────────────────────────────────
+  // Firestore: Load/Save Config
+  // ─────────────────────────────────────────────
+  async function loadAllConfig() {
+    try {
+      const docSnap = await getDoc(doc(db, 'admin', 'app_config'));
+      if (!docSnap.exists()) return;
+      const d = docSnap.data();
+
+      // Feature toggles
+      setToggle('tog-enableProVersion', d.enableProVersion);
+      setToggle('tog-enableNotifications', d.enableNotifications);
+      setToggle('tog-enableBadges', d.enableBadges);
+      setToggle('tog-enableMissions', d.enableMissions);
+      setToggle('tog-enableDailyTips', d.enableDailyTips);
+      setToggle('tog-enableSmartReminders', d.enableSmartReminders);
+      setToggle('tog-enableBackup', d.enableBackup);
+      setToggle('tog-enableStats', d.enableStats);
+      setToggle('tog-enableProfileHeader', d.enableProfileHeader);
+      setToggle('tog-enableSkeletonLoading', d.enableSkeletonLoading);
+      setToggle('tog-enablePullToRefresh', d.enablePullToRefresh);
+      setToggle('tog-enableMissedHabitDialog', d.enableMissedHabitDialog);
+      setToggle('tog-enableWidgetPrompt', d.enableWidgetPrompt ?? true);
+
+      // Pricing
+      setVal('cfg-monthlyPrice', d.monthlyPrice);
+      setVal('cfg-yearlyPrice', d.yearlyPrice);
+      setVal('cfg-proPrice', d.proPrice);
+      setVal('cfg-proProductId', d.proProductId);
+      setVal('cfg-monthlyProductId', d.monthlyProductId);
+      setVal('cfg-yearlyProductId', d.yearlyProductId);
+      setVal('cfg-maxHabitsFree', d.maxHabitsFree);
+      setVal('cfg-maxHabitsPro', d.maxHabitsPro);
+      setVal('cfg-rewardedExtraHabits', d.rewardedExtraHabits);
+
+      // Developer
+      setVal('cfg-developerName', d.developerName);
+      setVal('cfg-supportEmail', d.supportEmail);
+
+      // Links
+      setVal('link-telegramUrl', d.telegramUrl);
+      setVal('link-youtubeUrl', d.youtubeUrl);
+      setVal('link-facebookUrl', d.facebookUrl);
+      setVal('link-websiteUrl', d.websiteUrl);
+      setVal('link-privacyPolicyUrl', d.privacyPolicyUrl);
+      setVal('link-termsUrl', d.termsUrl);
+      setVal('link-playStoreAppUrl', d.playStoreAppUrl);
+      setVal('link-playStoreRateUrl', d.playStoreRateUrl);
+      setVal('link-playStoreDeveloperUrl', d.playStoreDeveloperUrl);
+      setVal('link-shareMessage', d.shareMessage);
+
+      // Ads
+      setToggle('tog-enableAds', d.enableAds);
+      setToggle('tog-enableAdMob', d.enableAdMob);
+      setToggle('tog-enableUnityAds', d.enableUnityAds);
+      setToggle('tog-enableBannerAd', d.enableBannerAd);
+      setToggle('tog-enableInterstitialAd', d.enableInterstitialAd);
+      setToggle('tog-enableRewardedAd', d.enableRewardedAd);
+      setToggle('tog-adSoundEnabled', d.adSoundEnabled);
+      setToggle('tog-adDebugMode', d.adDebugMode);
+      setToggle('tog-unityTestMode', d.unityTestMode);
+
+      setVal('ad-interstitialAdFrequency', d.interstitialAdFrequency);
+      setVal('ad-maxInterstitialPerSession', d.maxInterstitialPerSession);
+      setVal('ad-minSecondsBetweenInterstitial', d.minSecondsBetweenInterstitial);
+
+      setVal('ad-admobAppId', d.admobAppId);
+      setVal('ad-admobBannerAdUnitId', d.admobBannerAdUnitId);
+      setVal('ad-admobInterstitialAdUnitId', d.admobInterstitialAdUnitId);
+      setVal('ad-admobRewardedAdUnitId', d.admobRewardedAdUnitId);
+
+      setVal('ad-unityAndroidGameId', d.unityAndroidGameId);
+      setVal('ad-unityIosGameId', d.unityIosGameId);
+      setVal('ad-unityInterstitialPlacementId', d.unityInterstitialPlacementId);
+      setVal('ad-unityRewardedPlacementId', d.unityRewardedPlacementId);
+      setVal('ad-unityBannerPlacementId', d.unityBannerPlacementId);
+
+      // Badges
+      setVal('badge-streakBadgeThresholds', intListToString(d.streakBadgeThresholds));
+      setVal('badge-completionBadgeThresholds', intListToString(d.completionBadgeThresholds));
+      setVal('badge-perfectDayThresholds', intListToString(d.perfectDayThresholds));
+      setVal('badge-comebackThresholds', intListToString(d.comebackThresholds));
+      setVal('badge-timeBasedThresholds', intListToString(d.timeBasedThresholds));
+      setVal('badge-varietyThresholds', intListToString(d.varietyThresholds));
+      setVal('badge-appUsageThresholds', intListToString(d.appUsageThresholds));
+      setVal('badge-levelThresholds', intListToString(d.levelThresholds));
+
+      // Force Update (Firestore)
+      setToggle('tog-force_update_enabled', d.force_update_enabled === true);
+      setToggle('tog-allow_skip', d.allow_skip === true);
+      setVal('fu-force_update_version', d.force_update_version || '');
+      setVal('fu-force_update_title', d.force_update_title || '');
+      setVal('fu-force_update_message', d.force_update_message || '');
+      setVal('fu-force_update_url', d.force_update_url || '');
+
+      const features = d.update_features;
+      if (Array.isArray(features)) {
+        setVal('fu-update_features', features.join('\n'));
+      } else if (typeof features === 'string') {
+        // allow legacy JSON string
+        try {
+          const arr = JSON.parse(features);
+          if (Array.isArray(arr)) setVal('fu-update_features', arr.join('\n'));
+          else setVal('fu-update_features', features);
+        } catch(_) {
+          setVal('fu-update_features', features);
+        }
+      } else {
+        setVal('fu-update_features', '');
+      }
+
+      // Dashboard stat
+      document.getElementById('stat-ads').textContent = d.enableAds ? 'ON' : 'OFF';
+
+      console.log('✅ All config loaded.');
+    } catch (e) {
+      console.error('❌ Load config error:', e);
+      showToast('Load config error: ' + (e?.message || e), 'error');
+    }
+  }
+
+  async function saveAllConfig() {
+    try {
+      const configData = {
+        // Feature toggles
+        enableProVersion: getToggle('tog-enableProVersion'),
+        enableNotifications: getToggle('tog-enableNotifications'),
+        enableBadges: getToggle('tog-enableBadges'),
+        enableMissions: getToggle('tog-enableMissions'),
+        enableDailyTips: getToggle('tog-enableDailyTips'),
+        enableSmartReminders: getToggle('tog-enableSmartReminders'),
+        enableBackup: getToggle('tog-enableBackup'),
+        enableStats: getToggle('tog-enableStats'),
+        enableProfileHeader: getToggle('tog-enableProfileHeader'),
+        enableSkeletonLoading: getToggle('tog-enableSkeletonLoading'),
+        enablePullToRefresh: getToggle('tog-enablePullToRefresh'),
+        enableMissedHabitDialog: getToggle('tog-enableMissedHabitDialog'),
+        enableWidgetPrompt: getToggle('tog-enableWidgetPrompt'),
+
+        // Pricing
+        monthlyPrice: getVal('cfg-monthlyPrice') || '₹49',
+        yearlyPrice: getVal('cfg-yearlyPrice') || '₹399',
+        proPrice: getVal('cfg-proPrice') || '₹399',
+        proProductId: getVal('cfg-proProductId') || 'habit_node_pro',
+        monthlyProductId: getVal('cfg-monthlyProductId') || 'habit_node_monthly',
+        yearlyProductId: getVal('cfg-yearlyProductId') || 'habit_node_yearly',
+        maxHabitsFree: getIntVal('cfg-maxHabitsFree', 5),
+        maxHabitsPro: getIntVal('cfg-maxHabitsPro', 999),
+        rewardedExtraHabits: getIntVal('cfg-rewardedExtraHabits', 3),
+
+        // Developer
+        developerName: getVal('cfg-developerName') || 'VHIR',
+        supportEmail: getVal('cfg-supportEmail') || 'vhirsupport@gmail.com',
+
+        // Links
+        telegramUrl: getVal('link-telegramUrl'),
+        youtubeUrl: getVal('link-youtubeUrl'),
+        facebookUrl: getVal('link-facebookUrl'),
+        websiteUrl: getVal('link-websiteUrl'),
+        privacyPolicyUrl: getVal('link-privacyPolicyUrl'),
+        termsUrl: getVal('link-termsUrl'),
+        playStoreAppUrl: getVal('link-playStoreAppUrl'),
+        playStoreRateUrl: getVal('link-playStoreRateUrl'),
+        playStoreDeveloperUrl: getVal('link-playStoreDeveloperUrl'),
+        shareMessage: getVal('link-shareMessage'),
+
+        // Ads
+        enableAds: getToggle('tog-enableAds'),
+        enableAdMob: getToggle('tog-enableAdMob'),
+        enableUnityAds: getToggle('tog-enableUnityAds'),
+        enableBannerAd: getToggle('tog-enableBannerAd'),
+        enableInterstitialAd: getToggle('tog-enableInterstitialAd'),
+        enableRewardedAd: getToggle('tog-enableRewardedAd'),
+        adSoundEnabled: getToggle('tog-adSoundEnabled'),
+        adDebugMode: getToggle('tog-adDebugMode'),
+        unityTestMode: getToggle('tog-unityTestMode'),
+
+        interstitialAdFrequency: getIntVal('ad-interstitialAdFrequency', 4),
+        maxInterstitialPerSession: getIntVal('ad-maxInterstitialPerSession', 5),
+        minSecondsBetweenInterstitial: getIntVal('ad-minSecondsBetweenInterstitial', 120),
+
+        // IDs
+        admobAppId: getVal('ad-admobAppId'),
+        admobBannerAdUnitId: getVal('ad-admobBannerAdUnitId'),
+        admobInterstitialAdUnitId: getVal('ad-admobInterstitialAdUnitId'),
+        admobRewardedAdUnitId: getVal('ad-admobRewardedAdUnitId'),
+
+        unityAndroidGameId: getVal('ad-unityAndroidGameId'),
+        unityIosGameId: getVal('ad-unityIosGameId'),
+        unityInterstitialPlacementId: getVal('ad-unityInterstitialPlacementId'),
+        unityRewardedPlacementId: getVal('ad-unityRewardedPlacementId'),
+        unityBannerPlacementId: getVal('ad-unityBannerPlacementId'),
+
+        updatedAt: Timestamp.now(),
+      };
+
+      // Badge arrays
+      const badgeFields = [
+        'streakBadgeThresholds',
+        'completionBadgeThresholds',
+        'perfectDayThresholds',
+        'comebackThresholds',
+        'timeBasedThresholds',
+        'varietyThresholds',
+        'appUsageThresholds',
+        'levelThresholds',
+      ];
+      for (const field of badgeFields) {
+        const parsed = parseIntList('badge-' + field);
+        if (parsed && parsed.length > 0) configData[field] = parsed;
+      }
+
+      await setDoc(doc(db, 'admin', 'app_config'), configData, { merge: true });
+      showToast('All config saved successfully! ✅', 'success');
+      document.getElementById('stat-ads').textContent = configData.enableAds ? 'ON' : 'OFF';
+    } catch (e) {
+      console.error(e);
+      showToast('Error saving: ' + (e?.message || e), 'error');
+    }
+  }
+
+  async function saveForceUpdateConfig() {
+    try {
+      const features = getVal('fu-update_features')
+        .split('\n')
+        .map(s => s.trim())
+        .filter(s => s.length > 0);
+
+      const data = {
+        force_update_enabled: getToggle('tog-force_update_enabled'),
+        allow_skip: getToggle('tog-allow_skip'),
+        force_update_version: getVal('fu-force_update_version') || '1.0.0',
+        force_update_title: getVal('fu-force_update_title') || 'Update Available! 🚀',
+        force_update_message: getVal('fu-force_update_message') || 'Please update to continue.',
+        force_update_url: getVal('fu-force_update_url') || 'https://play.google.com/store/apps/details?id=com.habit.node',
+        update_features: features,
+        updatedAt: Timestamp.now(),
+      };
+
+      await setDoc(doc(db, 'admin', 'app_config'), data, { merge: true });
+      showToast('Force Update saved ✅', 'success');
+    } catch (e) {
+      console.error(e);
+      showToast('Force Update save error: ' + (e?.message || e), 'error');
+    }
+  }
+
+  window.saveAllConfig = saveAllConfig;
+  window.saveForceUpdateConfig = saveForceUpdateConfig;
+
+  // ─────────────────────────────────────────────
+  // VIP
+  // ─────────────────────────────────────────────
+  function showAddVipModal() {
+    document.getElementById('vip-email').value = '';
+    document.getElementById('vip-password').value = '';
+    document.getElementById('vip-expiry').value = '';
+    document.getElementById('addVipModal').classList.add('show');
+  }
+  function closeVipModal() {
+    document.getElementById('addVipModal').classList.remove('show');
+  }
+  window.showAddVipModal = showAddVipModal;
+  window.closeVipModal = closeVipModal;
+
+  async function loadVipUsers() {
+    try {
+      const snapshot = await getDocs(collection(db, 'vip_users'));
+      const tbody = document.getElementById('vip-table-body');
+      tbody.innerHTML = '';
+
+      let total = 0, active = 0, expired = 0;
+
+      snapshot.forEach(docSnap => {
+        const d = docSnap.data();
+        const email = docSnap.id;
+        total++;
+
+        let expiryStr = 'Lifetime';
+        let isActive = true;
+        let badgeClass = 'badge-lifetime';
+
+        if (d.expiryDate) {
+          const expiry = d.expiryDate.toDate();
+          expiryStr = expiry.toLocaleString();
+          if (expiry < new Date()) {
+            isActive = false;
+            expired++;
+            badgeClass = 'badge-expired';
+          } else {
+            active++;
+            badgeClass = 'badge-active';
+          }
         } else {
-            document.getElementById('loginOverlay').classList.remove('hidden');
-        }
-    });
-
-    window.handleAdminLogin = async function() {
-        const email = document.getElementById('loginEmail').value.trim();
-        const password = document.getElementById('loginPassword').value.trim();
-        const errorEl = document.getElementById('loginError');
-        const spinner = document.getElementById('loginSpinner');
-        const btn = document.getElementById('loginBtn');
-
-        if (!email || !password) {
-            errorEl.textContent = 'Please enter email and password';
-            errorEl.classList.add('show');
-            return;
+          active++;
+          badgeClass = 'badge-lifetime';
         }
 
-        errorEl.classList.remove('show');
-        btn.style.display = 'none';
-        spinner.classList.add('show');
+        const deviceBound = d.deviceId ? ('✅ ' + String(d.deviceId).substring(0, 14) + '...') : '❌ Not bound';
 
-        adminPassword = password;
+        tbody.innerHTML += `
+          <tr>
+            <td><strong>${email}</strong></td>
+            <td><span class="badge ${badgeClass}">${!d.expiryDate ? '♾️ Lifetime' : (isActive ? 'Active' : 'Expired')}</span></td>
+            <td>${expiryStr}</td>
+            <td style="font-size:12px;">${deviceBound}</td>
+            <td style="white-space:nowrap;">
+              <button class="btn btn-sm btn-primary" onclick="resetDevice('${email}')"><i class="fas fa-mobile-alt"></i> Reset</button>
+              <button class="btn btn-sm btn-danger" onclick="deleteVip('${email}')" style="margin-left:6px;"><i class="fas fa-trash"></i></button>
+            </td>
+          </tr>
+        `;
+      });
 
-        try {
-            await signInWithEmailAndPassword(auth, email, password);
-        } catch(e) {
-            let msg = 'Login failed. Check your credentials.';
-            if (e.code === 'auth/user-not-found') msg = 'Admin account not found.';
-            else if (e.code === 'auth/wrong-password') msg = 'Incorrect password.';
-            else if (e.code === 'auth/invalid-credential') msg = 'Invalid credentials.';
-            else if (e.code === 'auth/too-many-requests') msg = 'Too many attempts. Try later.';
-            errorEl.textContent = msg;
-            errorEl.classList.add('show');
-        } finally {
-            btn.style.display = 'inline-flex';
-            spinner.classList.remove('show');
-        }
+      document.getElementById('stat-vip').textContent = total;
+      document.getElementById('stat-active').textContent = active;
+      document.getElementById('stat-expired').textContent = expired;
+
+      if (total === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--text-muted); padding:40px;">No VIP users yet.</td></tr>';
+      }
+    } catch (e) {
+      console.error('Load VIP error:', e);
+      showToast('Load VIP error: ' + (e?.message || e), 'error');
     }
+  }
 
-    window.handleAdminLogout = async function() {
-        if (!confirm('Are you sure you want to logout?')) return;
-        try {
-            await signOut(auth);
-            adminPassword = '';
-            showToast('Logged out successfully', 'success');
-        } catch(e) {
-            showToast('Logout error: ' + e.message, 'error');
-        }
+  async function createVipUser() {
+    const email = getVal('vip-email').trim().toLowerCase();
+    const password = getVal('vip-password').trim();
+    const expiryInput = getVal('vip-expiry');
+
+    if (!email || !password) { showToast('Email and password required!', 'error'); return; }
+    if (password.length < 6) { showToast('Password must be at least 6 characters!', 'error'); return; }
+
+    try {
+      await createUserWithEmailAndPassword(auth, email, password);
+
+      const vipData = {
+        email: email,
+        deviceId: '',
+        createdAt: Timestamp.now(),
+      };
+      if (expiryInput) {
+        vipData.expiryDate = Timestamp.fromDate(new Date(expiryInput));
+      }
+      await setDoc(doc(db, 'vip_users', email), vipData);
+
+      await signOut(auth);
+
+      if (adminEmail && adminPassword) {
+        await signInWithEmailAndPassword(auth, adminEmail, adminPassword);
+      }
+
+      closeVipModal();
+      showToast('VIP user created: ' + email + ' 👑', 'success');
+      loadVipUsers();
+    } catch (e) {
+      console.error(e);
+      showToast('VIP create error: ' + (e?.message || e), 'error');
+
+      // try re-login admin if lost
+      if (adminEmail && adminPassword) {
+        try { await signInWithEmailAndPassword(auth, adminEmail, adminPassword); } catch (_) {}
+      }
     }
+  }
 
-    document.getElementById('loginPassword')?.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') handleAdminLogin();
-    });
-    document.getElementById('loginEmail')?.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') document.getElementById('loginPassword').focus();
-    });
-
-    // ═══════════════════════════════════════
-    // HELPER FUNCTIONS
-    // ═══════════════════════════════════════
-
-    function setVal(id, val) {
-        const el = document.getElementById(id);
-        if (el && val !== undefined && val !== null) el.value = val;
+  async function resetDevice(email) {
+    if (!confirm('Reset device for ' + email + '?')) return;
+    try {
+      await updateDoc(doc(db, 'vip_users', email), { deviceId: '' });
+      showToast('Device reset for ' + email + ' ✅', 'success');
+      loadVipUsers();
+    } catch (e) {
+      showToast('Error: ' + (e?.message || e), 'error');
     }
+  }
 
-    function setToggle(id, val) {
-        const el = document.getElementById(id);
-        if (el) {
-            if (val === true || val === 'true') el.classList.add('active');
-            else el.classList.remove('active');
-        }
+  async function deleteVip(email) {
+    if (!confirm('DELETE VIP: ' + email + '?')) return;
+    try {
+      await deleteDoc(doc(db, 'vip_users', email));
+      showToast('Deleted: ' + email, 'success');
+      loadVipUsers();
+    } catch (e) {
+      showToast('Error: ' + (e?.message || e), 'error');
     }
+  }
 
-    function getToggle(id) {
-        return document.getElementById(id)?.classList.contains('active') || false;
+  window.createVipUser = createVipUser;
+  window.resetDevice = resetDevice;
+  window.deleteVip = deleteVip;
+
+  // ─────────────────────────────────────────────
+  // Push Notifications
+  // ─────────────────────────────────────────────
+  function updateNotifPreview() {
+    const title = getVal('notif-title').trim() || '🔔 Notification Title';
+    const body = getVal('notif-body').trim() || 'Notification body text...';
+    document.getElementById('notif-preview-title').textContent = title;
+    document.getElementById('notif-preview-body').textContent = body;
+  }
+  window.updateNotifPreview = updateNotifPreview;
+
+  async function sendPushNotification() {
+    const title = getVal('notif-title').trim();
+    const body = getVal('notif-body').trim();
+    if (!title || !body) { showToast('Title and body are required!', 'error'); return; }
+
+    try {
+      const notifData = {
+        title: title,
+        body: body,
+        sentAt: Timestamp.now(),
+        sentBy: adminEmail || 'admin',
+        type: 'broadcast',
+        read: false,
+      };
+
+      await setDoc(doc(db, 'admin', 'push_notification'), notifData);
+
+      const historyId = 'notif_' + Date.now();
+      await setDoc(doc(db, 'admin_notifications', historyId), notifData);
+
+      document.getElementById('notif-title').value = '';
+      document.getElementById('notif-body').value = '';
+      updateNotifPreview();
+
+      showToast('Notification sent to all users! 📢', 'success');
+      loadNotificationHistory();
+    } catch (e) {
+      console.error(e);
+      showToast('Error sending notification: ' + (e?.message || e), 'error');
     }
+  }
+  window.sendPushNotification = sendPushNotification;
 
-    function getVal(id) {
-        return document.getElementById(id)?.value || '';
+  async function triggerConfigUpdate() {
+    try {
+      await setDoc(doc(db, 'admin', 'app_config'), {
+        forceRefresh: true,
+        forceRefreshAt: Timestamp.now(),
+        updatedAt: Timestamp.now(),
+      }, { merge: true });
+      showToast('Config refresh triggered! ✅', 'success');
+    } catch (e) {
+      showToast('Error: ' + (e?.message || e), 'error');
     }
+  }
+  window.triggerConfigUpdate = triggerConfigUpdate;
 
-    function getIntVal(id, fallback) {
-        const v = parseInt(getVal(id));
-        return isNaN(v) ? fallback : v;
+  async function loadNotificationHistory() {
+    try {
+      const q = query(collection(db, 'admin_notifications'), orderBy('sentAt', 'desc'), limit(20));
+      const snapshot = await getDocs(q);
+
+      const historyEl = document.getElementById('notification-history');
+      const recentEl = document.getElementById('recent-notifications');
+
+      const notifications = [];
+      snapshot.forEach(docSnap => notifications.push({ id: docSnap.id, ...docSnap.data() }));
+
+      if (notifications.length === 0) {
+        historyEl.innerHTML = '<p style="color:var(--text-muted); font-size:13px;">No notifications yet.</p>';
+        recentEl.innerHTML = '<p style="color:var(--text-muted); font-size:13px;">No notifications yet.</p>';
+        return;
+      }
+
+      historyEl.innerHTML = notifications.map(n => `
+        <div class="notif-history-item">
+          <div class="notif-content">
+            <div class="notif-title">${n.title || 'Untitled'}</div>
+            <div class="notif-body">${n.body || ''}</div>
+          </div>
+          <div class="notif-time">${timeAgo(n.sentAt)}</div>
+        </div>
+      `).join('');
+
+      recentEl.innerHTML = notifications.slice(0, 3).map(n => `
+        <div class="notif-history-item">
+          <div class="notif-content">
+            <div class="notif-title">${n.title || 'Untitled'}</div>
+            <div class="notif-body">${n.body || ''}</div>
+          </div>
+          <div class="notif-time">${timeAgo(n.sentAt)}</div>
+        </div>
+      `).join('');
+    } catch (e) {
+      console.error(e);
+      showToast('History load error: ' + (e?.message || e), 'error');
     }
+  }
 
-    function parseIntList(id) {
-        const raw = getVal(id).trim();
-        if (!raw) return null;
-        try {
-            return raw.split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n));
-        } catch(e) { return null; }
+  // Keyboard shortcuts
+  document.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+      e.preventDefault();
+      saveAllConfig();
     }
-
-    function intListToString(arr) {
-        if (!arr || !Array.isArray(arr)) return '';
-        return arr.join(', ');
-    }
-
-    function formatTimestamp(ts) {
-        if (!ts) return 'N/A';
-        try {
-            const d = ts.toDate ? ts.toDate() : new Date(ts);
-            return d.toLocaleDateString('en-US', {
-                year: 'numeric', month: 'short', day: 'numeric',
-                hour: '2-digit', minute: '2-digit'
-            });
-        } catch(e) { return 'N/A'; }
-    }
-
-    function timeAgo(ts) {
-        if (!ts) return '';
-        try {
-            const d = ts.toDate ? ts.toDate() : new Date(ts);
-            const now = new Date();
-            const diffMs = now - d;
-            const diffMins = Math.floor(diffMs / 60000);
-            const diffHours = Math.floor(diffMs / 3600000);
-            const diffDays = Math.floor(diffMs / 86400000);
-
-            if (diffMins < 1) return 'just now';
-            if (diffMins < 60) return diffMins + ' min ago';
-            if (diffHours < 24) return diffHours + ' hour' + (diffHours > 1 ? 's' : '') + ' ago';
-            if (diffDays < 30) return diffDays + ' day' + (diffDays > 1 ? 's' : '') + ' ago';
-            return formatTimestamp(ts);
-        } catch(e) { return ''; }
-    }
-
-    window.setVal = setVal;
-    window.setToggle = setToggle;
-    window.getToggle = getToggle;
-    window.getVal = getVal;
-    window.getIntVal = getIntVal;
-    window.parseIntList = parseIntList;
-
-    // ═══════════════════════════════════════
-    // LOAD ALL CONFIG FROM FIREBASE
-    // ═══════════════════════════════════════
-
-    window.loadAllConfig = async function() {
-        try {
-            const docSnap = await getDoc(fbDoc(db, 'admin', 'app_config'));
-            if (!docSnap.exists()) {
-                console.log('No config found yet. Will create on first save.');
-                return;
-            }
-            const d = docSnap.data();
-
-            // ═══ FEATURE TOGGLES ═══
-            setToggle('tog-enableProVersion', d.enableProVersion);
-            setToggle('tog-enableNotifications', d.enableNotifications);
-            setToggle('tog-enableBadges', d.enableBadges);
-            setToggle('tog-enableMissions', d.enableMissions);
-            setToggle('tog-enableDailyTips', d.enableDailyTips);
-            setToggle('tog-enableSmartReminders', d.enableSmartReminders);
-            setToggle('tog-enableBackup', d.enableBackup);
-            setToggle('tog-enableStats', d.enableStats);
-            setToggle('tog-enableProfileHeader', d.enableProfileHeader);
-            setToggle('tog-enableSkeletonLoading', d.enableSkeletonLoading);
-            setToggle('tog-enablePullToRefresh', d.enablePullToRefresh);
-            setToggle('tog-enableMissedHabitDialog', d.enableMissedHabitDialog);
-
-            // ═══ PRICING ═══
-            setVal('cfg-monthlyPrice', d.monthlyPrice);
-            setVal('cfg-yearlyPrice', d.yearlyPrice);
-            setVal('cfg-proPrice', d.proPrice);
-            setVal('cfg-proProductId', d.proProductId);
-            setVal('cfg-monthlyProductId', d.monthlyProductId);
-            setVal('cfg-yearlyProductId', d.yearlyProductId);
-            setVal('cfg-maxHabitsFree', d.maxHabitsFree);
-            setVal('cfg-maxHabitsPro', d.maxHabitsPro);
-            setVal('cfg-rewardedExtraHabits', d.rewardedExtraHabits);
-
-            // ═══ DEVELOPER ═══
-            setVal('cfg-developerName', d.developerName);
-            setVal('cfg-supportEmail', d.supportEmail);
-
-            // ═══ ALL LINKS ═══
-            setVal('link-telegramUrl', d.telegramUrl);
-            setVal('link-youtubeUrl', d.youtubeUrl);
-            setVal('link-facebookUrl', d.facebookUrl);
-            setVal('link-websiteUrl', d.websiteUrl);
-            setVal('link-privacyPolicyUrl', d.privacyPolicyUrl);
-            setVal('link-termsUrl', d.termsUrl);
-            setVal('link-playStoreAppUrl', d.playStoreAppUrl);
-            setVal('link-playStoreRateUrl', d.playStoreRateUrl);
-            setVal('link-playStoreDeveloperUrl', d.playStoreDeveloperUrl);
-            setVal('link-shareMessage', d.shareMessage);
-
-            // ═══ AD TOGGLES ═══
-            setToggle('tog-enableAds', d.enableAds);
-            setToggle('tog-enableAdMob', d.enableAdMob);
-            setToggle('tog-enableUnityAds', d.enableUnityAds);
-            setToggle('tog-enableBannerAd', d.enableBannerAd);
-            setToggle('tog-enableInterstitialAd', d.enableInterstitialAd);
-            setToggle('tog-enableRewardedAd', d.enableRewardedAd);
-            setToggle('tog-adSoundEnabled', d.adSoundEnabled);
-            setToggle('tog-adDebugMode', d.adDebugMode);
-            setToggle('tog-unityTestMode', d.unityTestMode);
-
-            // ═══ AD FREQUENCY ═══
-            setVal('ad-interstitialAdFrequency', d.interstitialAdFrequency);
-            setVal('ad-maxInterstitialPerSession', d.maxInterstitialPerSession);
-            setVal('ad-minSecondsBetweenInterstitial', d.minSecondsBetweenInterstitial);
-
-            // ═══ ADMOB IDs ═══
-            setVal('ad-admobAppId', d.admobAppId);
-            setVal('ad-admobBannerAdUnitId', d.admobBannerAdUnitId);
-            setVal('ad-admobInterstitialAdUnitId', d.admobInterstitialAdUnitId);
-            setVal('ad-admobRewardedAdUnitId', d.admobRewardedAdUnitId);
-
-            // ═══ UNITY IDs ═══
-            setVal('ad-unityAndroidGameId', d.unityAndroidGameId);
-            setVal('ad-unityIosGameId', d.unityIosGameId);
-            setVal('ad-unityInterstitialPlacementId', d.unityInterstitialPlacementId);
-            setVal('ad-unityRewardedPlacementId', d.unityRewardedPlacementId);
-            setVal('ad-unityBannerPlacementId', d.unityBannerPlacementId);
-
-            // ═══ BADGE THRESHOLDS ═══
-            setVal('badge-streakBadgeThresholds', intListToString(d.streakBadgeThresholds));
-            setVal('badge-completionBadgeThresholds', intListToString(d.completionBadgeThresholds));
-            setVal('badge-perfectDayThresholds', intListToString(d.perfectDayThresholds));
-            setVal('badge-comebackThresholds', intListToString(d.comebackThresholds));
-            setVal('badge-timeBasedThresholds', intListToString(d.timeBasedThresholds));
-            setVal('badge-varietyThresholds', intListToString(d.varietyThresholds));
-            setVal('badge-appUsageThresholds', intListToString(d.appUsageThresholds));
-            setVal('badge-levelThresholds', intListToString(d.levelThresholds));
-
-            // ═══ DASHBOARD STATS ═══
-            document.getElementById('stat-ads').textContent = d.enableAds ? 'ON' : 'OFF';
-
-            console.log('✅ All config loaded.');
-        } catch(e) {
-            console.error('❌ Load config error:', e);
-        }
-    }
-
-    // ═══════════════════════════════════════
-    // SAVE ALL CONFIG TO FIREBASE
-    // ═══════════════════════════════════════
-
-    window.saveAllConfig = async function() {
-        try {
-            const configData = {
-                // ═══ FEATURE TOGGLES ═══
-                enableProVersion: getToggle('tog-enableProVersion'),
-                enableNotifications: getToggle('tog-enableNotifications'),
-                enableBadges: getToggle('tog-enableBadges'),
-                enableMissions: getToggle('tog-enableMissions'),
-                enableDailyTips: getToggle('tog-enableDailyTips'),
-                enableSmartReminders: getToggle('tog-enableSmartReminders'),
-                enableBackup: getToggle('tog-enableBackup'),
-                enableStats: getToggle('tog-enableStats'),
-                enableProfileHeader: getToggle('tog-enableProfileHeader'),
-                enableSkeletonLoading: getToggle('tog-enableSkeletonLoading'),
-                enablePullToRefresh: getToggle('tog-enablePullToRefresh'),
-                enableMissedHabitDialog: getToggle('tog-enableMissedHabitDialog'),
-
-                // ═══ PRICING ═══
-                monthlyPrice: getVal('cfg-monthlyPrice') || '₹49',
-                yearlyPrice: getVal('cfg-yearlyPrice') || '₹399',
-                proPrice: getVal('cfg-proPrice') || '₹399',
-                proProductId: getVal('cfg-proProductId') || 'habit_node_pro',
-                monthlyProductId: getVal('cfg-monthlyProductId') || 'habit_node_monthly',
-                yearlyProductId: getVal('cfg-yearlyProductId') || 'habit_node_yearly',
-                maxHabitsFree: getIntVal('cfg-maxHabitsFree', 5),
-                maxHabitsPro: getIntVal('cfg-maxHabitsPro', 999),
-                rewardedExtraHabits: getIntVal('cfg-rewardedExtraHabits', 3),
-
-                // ═══ DEVELOPER ═══
-                developerName: getVal('cfg-developerName') || 'VHIR',
-                supportEmail: getVal('cfg-supportEmail') || 'vhirsupport@gmail.com',
-
-                // ═══ ALL LINKS ═══
-                telegramUrl: getVal('link-telegramUrl'),
-                youtubeUrl: getVal('link-youtubeUrl'),
-                facebookUrl: getVal('link-facebookUrl'),
-                websiteUrl: getVal('link-websiteUrl'),
-                privacyPolicyUrl: getVal('link-privacyPolicyUrl'),
-                termsUrl: getVal('link-termsUrl'),
-                playStoreAppUrl: getVal('link-playStoreAppUrl'),
-                playStoreRateUrl: getVal('link-playStoreRateUrl'),
-                playStoreDeveloperUrl: getVal('link-playStoreDeveloperUrl'),
-                shareMessage: getVal('link-shareMessage'),
-
-                // ═══ AD TOGGLES ═══
-                enableAds: getToggle('tog-enableAds'),
-                enableAdMob: getToggle('tog-enableAdMob'),
-                enableUnityAds: getToggle('tog-enableUnityAds'),
-                enableBannerAd: getToggle('tog-enableBannerAd'),
-                enableInterstitialAd: getToggle('tog-enableInterstitialAd'),
-                enableRewardedAd: getToggle('tog-enableRewardedAd'),
-                adSoundEnabled: getToggle('tog-adSoundEnabled'),
-                adDebugMode: getToggle('tog-adDebugMode'),
-                unityTestMode: getToggle('tog-unityTestMode'),
-
-                // ═══ AD FREQUENCY ═══
-                interstitialAdFrequency: getIntVal('ad-interstitialAdFrequency', 4),
-                maxInterstitialPerSession: getIntVal('ad-maxInterstitialPerSession', 5),
-                minSecondsBetweenInterstitial: getIntVal('ad-minSecondsBetweenInterstitial', 120),
-
-                // ═══ ADMOB IDs ═══
-                admobAppId: getVal('ad-admobAppId'),
-                admobBannerAdUnitId: getVal('ad-admobBannerAdUnitId'),
-                admobInterstitialAdUnitId: getVal('ad-admobInterstitialAdUnitId'),
-                admobRewardedAdUnitId: getVal('ad-admobRewardedAdUnitId'),
-
-                // ═══ UNITY IDs ═══
-                unityAndroidGameId: getVal('ad-unityAndroidGameId'),
-                unityIosGameId: getVal('ad-unityIosGameId'),
-                unityInterstitialPlacementId: getVal('ad-unityInterstitialPlacementId'),
-                unityRewardedPlacementId: getVal('ad-unityRewardedPlacementId'),
-                unityBannerPlacementId: getVal('ad-unityBannerPlacementId'),
-
-                // ═══ TIMESTAMP ═══
-                updatedAt: Timestamp.now(),
-            };
-
-            // ═══ BADGE THRESHOLDS ═══
-            const thresholdFields = [
-                'streakBadgeThresholds', 'completionBadgeThresholds',
-                'perfectDayThresholds', 'comebackThresholds',
-                'timeBasedThresholds', 'varietyThresholds',
-                'appUsageThresholds', 'levelThresholds'
-            ];
-
-            for (const field of thresholdFields) {
-                const parsed = parseIntList('badge-' + field);
-                if (parsed && parsed.length > 0) configData[field] = parsed;
-            }
-
-            await setDoc(fbDoc(db, 'admin', 'app_config'), configData, { merge: true });
-            showToast('All config saved successfully! ✅', 'success');
-            document.getElementById('stat-ads').textContent = configData.enableAds ? 'ON' : 'OFF';
-
-        } catch(e) {
-            showToast('Error saving: ' + e.message, 'error');
-            console.error(e);
-        }
-    }
-
-    // ═══════════════════════════════════════
-    // VIP USERS — LOAD
-    // ═══════════════════════════════════════
-
-    window.loadVipUsers = async function() {
-        try {
-            const snapshot = await getDocs(fbCollection(db, 'vip_users'));
-            const tbody = document.getElementById('vip-table-body');
-            tbody.innerHTML = '';
-
-            let total = 0, active = 0, expired = 0;
-
-            snapshot.forEach(docSnap => {
-                const d = docSnap.data();
-                const email = docSnap.id;
-                total++;
-
-                let expiryStr = 'Lifetime';
-                let isActive = true;
-                let badgeClass = 'badge-lifetime';
-
-                if (d.expiryDate) {
-                    const expiry = d.expiryDate.toDate();
-                    expiryStr = expiry.toLocaleDateString('en-US', {
-                        year:'numeric', month:'short', day:'numeric',
-                        hour:'2-digit', minute:'2-digit'
-                    });
-                    if (expiry < new Date()) {
-                        isActive = false;
-                        expired++;
-                        badgeClass = 'badge-expired';
-                    } else {
-                        active++;
-                        badgeClass = 'badge-active';
-                    }
-                } else {
-                    active++;
-                    badgeClass = 'badge-lifetime';
-                }
-
-                const deviceBound = d.deviceId
-                    ? '✅ ' + d.deviceId.substring(0, 14) + '...'
-                    : '❌ Not bound';
-
-                tbody.innerHTML += `
-                    <tr>
-                        <td><strong>${email}</strong></td>
-                        <td><span class="badge ${badgeClass}">${!d.expiryDate ? '♾️ Lifetime' : (isActive ? 'Active' : 'Expired')}</span></td>
-                        <td>${expiryStr}</td>
-                        <td style="font-size:12px;">${deviceBound}</td>
-                        <td style="white-space:nowrap;">
-                            <button class="btn btn-sm btn-primary" onclick="resetDevice('${email}')"><i class="fas fa-mobile-alt"></i> Reset</button>
-                            <button class="btn btn-sm btn-danger" onclick="deleteVip('${email}')" style="margin-left:6px;"><i class="fas fa-trash"></i></button>
-                        </td>
-                    </tr>
-                `;
-            });
-
-            document.getElementById('stat-vip').textContent = total;
-            document.getElementById('stat-active').textContent = active;
-            document.getElementById('stat-expired').textContent = expired;
-
-            if (total === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--text-muted); padding:40px;">No VIP users yet. Click "Add VIP User" to create one.</td></tr>';
-            }
-        } catch(e) {
-            console.error('Load VIP error:', e);
-        }
-    }
-
-    // ═══════════════════════════════════════
-    // VIP USERS — CREATE
-    // ═══════════════════════════════════════
-
-    window.createVipUser = async function() {
-        const email = getVal('vip-email').trim().toLowerCase();
-        const password = getVal('vip-password').trim();
-        const expiryInput = getVal('vip-expiry');
-
-        if (!email || !password) { showToast('Email and password required!', 'error'); return; }
-        if (password.length < 6) { showToast('Password must be at least 6 characters!', 'error'); return; }
-
-        try {
-            await createUserWithEmailAndPassword(auth, email, password);
-
-            const vipData = {
-                email: email,
-                deviceId: '',
-                createdAt: Timestamp.now(),
-            };
-            if (expiryInput) {
-                vipData.expiryDate = Timestamp.fromDate(new Date(expiryInput));
-            }
-            await setDoc(fbDoc(db, 'vip_users', email), vipData);
-
-            await signOut(auth);
-
-            if (adminEmail && adminPassword) {
-                try {
-                    await signInWithEmailAndPassword(auth, adminEmail, adminPassword);
-                } catch(reLoginErr) {
-                    console.error('Admin re-login failed:', reLoginErr);
-                    showToast('VIP created but admin session lost. Please login again.', 'error');
-                }
-            }
-
-            closeVipModal();
-            showToast('VIP user created: ' + email + ' 👑', 'success');
-            loadVipUsers();
-        } catch(e) {
-            showToast('Error: ' + e.message, 'error');
-            console.error(e);
-
-            if (adminEmail && adminPassword) {
-                try { await signInWithEmailAndPassword(auth, adminEmail, adminPassword); } catch(_) {}
-            }
-        }
-    }
-
-    // ═══════════════════════════════════════
-    // VIP USERS — RESET DEVICE
-    // ═══════════════════════════════════════
-
-    window.resetDevice = async function(email) {
-        if (!confirm('Reset device for ' + email + '?\nThey can login from a new device.')) return;
-        try {
-            await updateDoc(fbDoc(db, 'vip_users', email), { deviceId: '' });
-            showToast('Device reset for ' + email + ' ✅', 'success');
-            loadVipUsers();
-        } catch(e) {
-            showToast('Error: ' + e.message, 'error');
-        }
-    }
-
-    // ═══════════════════════════════════════
-    // VIP USERS — DELETE
-    // ═══════════════════════════════════════
-
-    window.deleteVip = async function(email) {
-        if (!confirm('DELETE VIP: ' + email + '?\n\nFirestore record will be removed.\nAlso delete from Firebase Auth > Users manually.')) return;
-        try {
-            await deleteDoc(fbDoc(db, 'vip_users', email));
-            showToast('Deleted: ' + email, 'success');
-            loadVipUsers();
-        } catch(e) {
-            showToast('Error: ' + e.message, 'error');
-        }
-    }
-
-    // ═══════════════════════════════════════
-    // 🆕 PUSH NOTIFICATION — SEND (Firestore-based)
-    // ═══════════════════════════════════════
-
-    window.sendPushNotification = async function() {
-        const title = getVal('notif-title').trim();
-        const body = getVal('notif-body').trim();
-
-        if (!title || !body) {
-            showToast('Title and body are required!', 'error');
-            return;
-        }
-
-        try {
-            const notifData = {
-                title: title,
-                body: body,
-                sentAt: Timestamp.now(),
-                sentBy: adminEmail || 'admin',
-                type: 'broadcast',
-                read: false,
-            };
-
-            // Save to the main push_notification document (app reads this)
-            await setDoc(fbDoc(db, 'admin', 'push_notification'), notifData);
-
-            // Also save to notification history collection
-            const historyId = 'notif_' + Date.now();
-            await setDoc(fbDoc(db, 'admin_notifications', historyId), notifData);
-
-            // Clear fields
-            document.getElementById('notif-title').value = '';
-            document.getElementById('notif-body').value = '';
-            updateNotifPreview();
-
-            showToast('Notification sent to all users! 📢', 'success');
-
-            // Reload history
-            loadNotificationHistory();
-
-        } catch(e) {
-            showToast('Error sending notification: ' + e.message, 'error');
-            console.error('Push notification error:', e);
-        }
-    }
-
-    // ═══════════════════════════════════════
-    // 🆕 FORCE CONFIG REFRESH
-    // ═══════════════════════════════════════
-
-    window.triggerConfigUpdate = async function() {
-        try {
-            // Set a forceRefresh flag with current timestamp
-            await setDoc(fbDoc(db, 'admin', 'app_config'), {
-                forceRefresh: true,
-                forceRefreshAt: Timestamp.now(),
-                updatedAt: Timestamp.now(),
-            }, { merge: true });
-
-            showToast('Config refresh triggered! Apps will update on next open. ✅', 'success');
-        } catch(e) {
-            showToast('Error: ' + e.message, 'error');
-            console.error(e);
-        }
-    }
-
-    // ═══════════════════════════════════════
-    // 🆕 NOTIFICATION HISTORY — LOAD
-    // ═══════════════════════════════════════
-
-    window.loadNotificationHistory = async function() {
-        try {
-            const snapshot = await getDocs(fbCollection(db, 'admin_notifications'));
-            const historyEl = document.getElementById('notification-history');
-            const recentEl = document.getElementById('recent-notifications');
-
-            const notifications = [];
-            snapshot.forEach(docSnap => {
-                notifications.push({ id: docSnap.id, ...docSnap.data() });
-            });
-
-            // Sort by sentAt descending
-            notifications.sort((a, b) => {
-                const aTime = a.sentAt?.toMillis?.() || 0;
-                const bTime = b.sentAt?.toMillis?.() || 0;
-                return bTime - aTime;
-            });
-
-            if (notifications.length === 0) {
-                historyEl.innerHTML = '<p style="color:var(--text-muted); font-size:13px; text-align:center; padding:24px;">No notifications sent yet. Use the form above to send your first one!</p>';
-                recentEl.innerHTML = '<p style="color:var(--text-muted); font-size:13px;">No notifications sent yet.</p>';
-                return;
-            }
-
-            // Render history
-            let historyHtml = '';
-            notifications.forEach((n, i) => {
-                historyHtml += `
-                    <div class="notif-history-item">
-                        <div class="notif-content">
-                            <div class="notif-title">${n.title || 'Untitled'}</div>
-                            <div class="notif-body">${n.body || ''}</div>
-                        </div>
-                        <div class="notif-time">${timeAgo(n.sentAt)}</div>
-                    </div>
-                `;
-            });
-            historyEl.innerHTML = historyHtml;
-
-            // Render recent (max 3) on dashboard
-            let recentHtml = '';
-            notifications.slice(0, 3).forEach(n => {
-                recentHtml += `
-                    <div class="notif-history-item">
-                        <div class="notif-content">
-                            <div class="notif-title">${n.title || 'Untitled'}</div>
-                            <div class="notif-body">${n.body || ''}</div>
-                        </div>
-                        <div class="notif-time">${timeAgo(n.sentAt)}</div>
-                    </div>
-                `;
-            });
-            recentEl.innerHTML = recentHtml;
-
-        } catch(e) {
-            console.error('Load notification history error:', e);
-            document.getElementById('notification-history').innerHTML =
-                '<p style="color:var(--error); font-size:13px;">Error loading history.</p>';
-        }
-    }
-
-    // ═══════════════════════════════════════
-    // 🆕 NOTIFICATION PREVIEW (Live Update)
-    // ═══════════════════════════════════════
-
-    window.updateNotifPreview = function() {
-        const title = getVal('notif-title').trim() || '🔔 Notification Title';
-        const body = getVal('notif-body').trim() || 'Notification body text...';
-
-        document.getElementById('notif-preview-title').textContent = title;
-        document.getElementById('notif-preview-body').textContent = body;
-    }
-
-    // ═══════════════════════════════════════
-    // 🆕 NOTIFICATION QUICK TEMPLATES
-    // ═══════════════════════════════════════
-
-    window.applyTemplate = function(title, body) {
-        document.getElementById('notif-title').value = title;
-        document.getElementById('notif-body').value = body;
-        updateNotifPreview();
-        showToast('Template applied!', 'success');
-    }
-
-    // ═══════════════════════════════════════
-    // UI FUNCTIONS
-    // ═══════════════════════════════════════
-
-    window.toggleSwitch = function(el) {
-        el.classList.toggle('active');
-    }
-
-    window.showSection = function(name) {
-        // Hide all sections
-        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-        // Show target
-        const target = document.getElementById('sec-' + name);
-        if (target) target.classList.add('active');
-
-        // Update nav items
-        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-        event.currentTarget.classList.add('active');
-
-        // Close mobile sidebar
-        document.getElementById('sidebar').classList.remove('open');
-    }
-
-    window.showToast = function(message, type) {
-        const toast = document.getElementById('toast');
-        toast.textContent = message;
-        toast.className = 'toast toast-' + (type || 'success') + ' show';
-        setTimeout(() => { toast.classList.remove('show'); }, 3500);
-    }
-
-    window.showAddVipModal = function() {
-        document.getElementById('vip-email').value = '';
-        document.getElementById('vip-password').value = '';
-        document.getElementById('vip-expiry').value = '';
-        document.getElementById('addVipModal').classList.add('show');
-    }
-
-    window.closeVipModal = function() {
-        document.getElementById('addVipModal').classList.remove('show');
-    }
-
-    // ═══════════════════════════════════════
-    // KEYBOARD SHORTCUTS
-    // ═══════════════════════════════════════
-
-    document.addEventListener('keydown', function(e) {
-        // Ctrl+S or Cmd+S = Save
-        if ((e.ctrlKey || e.metaKey) && e.key === 's') {
-            e.preventDefault();
-            saveAllConfig();
-        }
-        // Escape = Close modal
-        if (e.key === 'Escape') {
-            closeVipModal();
-        }
-    });
-
-    // ═══════════════════════════════════════
-    // CLICK OUTSIDE MODAL TO CLOSE
-    // ═══════════════════════════════════════
-
-    document.getElementById('addVipModal')?.addEventListener('click', function(e) {
-        if (e.target === this) closeVipModal();
-    });
+    if (e.key === 'Escape') closeVipModal();
+  });
+
+  // click outside modal to close
+  document.getElementById('addVipModal')?.addEventListener('click', function(e) {
+    if (e.target === this) closeVipModal();
+  });
 
 </script>
-
 </body>
 </html>
